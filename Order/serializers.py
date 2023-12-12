@@ -7,8 +7,8 @@ class OrdersSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Orders
-        fields = ('pk', 'user', 'furniture', 'category', 'style',
-                 'size', 'color', 'image', 'material', 'text')
-    
+        fields = ('pk', 'user', 'furniture', 'material',
+                    'color', 'size', 'descriptiontrim', 'status', 'completed', 'date_to', 'img_preview')
+        
     def create(self, validated_data):
         return super().create(validated_data)

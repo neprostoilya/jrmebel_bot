@@ -1,6 +1,7 @@
 from django.db import models
-from Users.models import UserProfile
 from django.utils.safestring import mark_safe
+
+from Users.models import UserProfile
 from Catalog.models import Furnitures
 
 class Orders(models.Model):
@@ -44,7 +45,15 @@ class Orders(models.Model):
         blank=True,
         null=True
     )
-    
+    date_to = models.DateField(
+        verbose_name='До даты',
+    )
+    status = models.CharField(
+        verbose_name='Статус'
+    )
+    completed = models.BooleanField(
+        verbose_name='Выполнен'
+    )
 
     def descriptiontrim(self):
         return u"%s..." % (self.description[:100],)

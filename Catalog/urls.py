@@ -6,7 +6,7 @@ app_name = 'Catalog'
 
 urlpatterns = [
     path('get_categories/', CategoriesAPIView.as_view()),
-    path('get_subcategories/<category:str>/', SubcategoriesAPIView.as_view()),
+    path('get_subcategories/<category>/', SubcategoriesAPIView.as_view()),
     path('get_styles/', StylesAPIView.as_view()),
-    path('get_furnitures/<category:str>/<style:str>', FurnituresAPIView.as_view()),
+    path('get_furnitures/<category>/<style>', FurnituresAPIView.as_view()),
 ]

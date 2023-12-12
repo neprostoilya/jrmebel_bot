@@ -17,7 +17,7 @@ class CategoriesAPIView(APIView):
         """
         Get Categories
         """
-        serializer = CategoriesSerializer(get_categories, many=True).data
+        serializer = CategoriesSerializer(get_categories, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class SubcategoriesAPIView(APIView):
@@ -29,7 +29,7 @@ class SubcategoriesAPIView(APIView):
         """
         Get Subcategories
         """
-        serializer = CategoriesSerializer(get_subcategories_by_category(category), many=True).data
+        serializer = CategoriesSerializer(get_subcategories_by_category(category), many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 class StylesAPIView(APIView):
@@ -41,7 +41,7 @@ class StylesAPIView(APIView):
         """
         Get Styles
         """
-        serializer = StylesSerializer(get_all_styles, many=True).data
+        serializer = StylesSerializer(get_all_styles, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class FurnituresAPIView(APIView):
@@ -53,5 +53,5 @@ class FurnituresAPIView(APIView):
         """
         Get Furnitures
         """
-        serializer = FurnituresSerializer(get_furniture_by_category_and_style, many=True).data
+        serializer = FurnituresSerializer(get_furniture_by_category_and_style, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
