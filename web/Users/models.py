@@ -1,3 +1,7 @@
+import jwt
+from datetime import datetime, timedelta
+
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
@@ -102,3 +106,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    @property
+    def token(self):
+        return self.generate_jwt_token()
+
+    def generate_jwt_token(self):
+        dt = datetime.now() + timedelta(days=45)
+
+        token = jwt.encode({
+            'id': self.pk,
+            'exp': dt.strftime('%S')
+        },
+            settings.SECRET_KEY, algorithm='HS256').encode().decode('utf-8')
+
+        return token

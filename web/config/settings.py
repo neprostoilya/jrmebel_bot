@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv() 
 from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -11,6 +11,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = bool(int(os.getenv('DEBUG')))
 
 AUTH_USER_MODEL = 'Users.UserProfile'
+
+BOT_PK = str(os.getenv('BOT_PK'))
 
 ALLOWED_HOSTS = ['*']
 
@@ -26,15 +28,7 @@ INSTALLED_APPS = [
     'Users.apps.UsersConfig',
     'Order.apps.OrderConfig',
     'rest_framework',
-    'rest_framework_simplejwt',
-    
 ]
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -47,6 +41,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+
 
 TEMPLATES = [
     {
