@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from Users.models import UserProfile
-from Users.serializers import RegistrationSerializer, LoginSerializer, UserSerializer
+from Users.serializers import RegistrationSerializer, LoginSerializer, \
+    UserSerializer
 
 class UserAPIView(APIView):
     """

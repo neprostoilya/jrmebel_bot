@@ -9,3 +9,5 @@ TOKEN = os.getenv('BOT_TOKEN')
 ADMIN = os.getenv('BOT_ADMIN')
 # URL API
 URL = os.getenv('API_URL')
+# BOT PK
+BOT_PK = os.getenv('BOT_PK')
