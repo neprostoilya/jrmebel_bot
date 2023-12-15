@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from Catalog.models import Categories, Styles, Furnitures
 from Catalog.serializers import CategoriesSerializer, \
     StylesSerializer, FurnituresSerializer
 from Catalog.logics.view_logics import get_categories, \
@@ -12,12 +13,16 @@ class CategoriesAPIView(APIView):
     """
     View Categories
     """
+    serializer_class = CategoriesSerializer
 
     def get(self, request):
         """
         Get Categories
         """
-        serializer = CategoriesSerializer(get_categories, many=True)
+        categories = Categories.objects.all().filter(
+            subcategory=None
+        )
+        serializer = CategoriesSerializer(categories, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class SubcategoriesAPIView(APIView):
@@ -29,7 +34,10 @@ class SubcategoriesAPIView(APIView):
         """
         Get Subcategories
         """
-        serializer = CategoriesSerializer(get_subcategories_by_category(category), many=True)
+        subcategories = get_subcategories_by_category(
+            category=category
+        )
+        serializer = CategoriesSerializer(subcategories, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 class StylesAPIView(APIView):
@@ -41,7 +49,8 @@ class StylesAPIView(APIView):
         """
         Get Styles
         """
-        serializer = StylesSerializer(get_all_styles, many=True)
+        styles = Styles.objects.all()
+        serializer = StylesSerializer(styles, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class FurnituresAPIView(APIView):
@@ -53,5 +62,9 @@ class FurnituresAPIView(APIView):
         """
         Get Furnitures
         """
-        serializer = FurnituresSerializer(get_furniture_by_category_and_style, many=True)
+        furnitures = Furnitures.objects.filter(
+            category=category,
+            style=style
+        )
+        serializer = FurnituresSerializer(furnitures, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)

@@ -28,7 +28,8 @@ def check_user(chat_id: int):
     """
     Check User
     """
-    for _ in get('users/users'):
+    data = get('users/users')
+    for _ in data:
         if _['telegram_pk'] != chat_id:
             return True
 
@@ -47,3 +48,24 @@ def login_user(chat_id: int):
     """
     data = {'telegram_pk': f'{chat_id}'}
     return post('users/login/', data)
+
+def get_categories():
+    """
+    Get Categories Firnitures
+    """
+    data = get('catalog/get_categories/')
+    return data
+
+def get_subcategories_by_category(category: str):
+    """
+    Get Subcategories Firnitures by category
+    """
+    data = get(f'catalog/get_subcategories/{category}/')
+    return data
+
+def get_furnitures_by_category_and_style(category, style):
+    """
+    Get Furnitures by Category and Style
+    """
+    data = get(f'get_furnitures/{category}/{style}/')
+    return data
