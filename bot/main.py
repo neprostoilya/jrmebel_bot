@@ -1,15 +1,20 @@
-from config import TOKEN, ADMIN
+from config import TOKEN
 from utills import check_user, login_user, register_user, get_categories, \
     get_furnitures_by_category_and_style, get_subcategories_by_category
 from keyboards import phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
-    catalog_subcategories_keyboard, back_to_categories_keyboard
+    catalog_subcategories_keyboard, catalog_styles_keyboard, \
+    catalog_furnitures_keyboard
 
+from aiogram.dispatcher import FSMContext
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor
 from aiogram.types import Message, CallbackQuery
 
+storage = MemoryStorage()
+
 bot = Bot(TOKEN, parse_mode='HTML')
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=MemoryStorage())
 
 def default_message(message: Message):
     """
@@ -110,6 +115,75 @@ async def catalog_categories_list(message: Message):
         reply_markup=catalog_categories_keyboard()
     )
 
+@dp.callback_query_handler(lambda call: 'categories_' in call.data)
+async def catalog_subcategories_list(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    category_id = int(call.data.split('_')[-1])
+    await state.update_data(category_id=category_id) 
+    await bot.edit_message_text(
+        text='Выберите подкатегорию:',
+        chat_id=chat_id,
+        message_id=message_id,
+        reply_markup=catalog_subcategories_keyboard(category_id)
+    )
+
+@dp.callback_query_handler(lambda call: 'subcategory_' in call.data)
+async def catalog_styles_list(call: CallbackQuery):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    await bot.edit_message_text(
+        text='Выберите стиль:',
+        chat_id=chat_id,
+        message_id=message_id,
+        reply_markup=catalog_styles_keyboard()
+    )
+
+# @dp.callback_query_handler(lambda call: 'style_' in call.data)
+# async def catalog_furnitures(call: CallbackQuery):
+#     """
+#     Reaction on call button
+#     """
+#     chat_id, _, _, _, message_id = default_call(call)
+#     await bot.edit_message_text(
+#         text='Выберите мебель:',
+#         chat_id=chat_id,
+#         message_id=message_id,
+#         reply_markup=catalog_furnitures_keyboard()
+#     )   
+
+@dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
+async def back_to_categories(call: CallbackQuery):
+    """
+    Back to categories list
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    await bot.edit_message_text(
+        text="Выберите категорию: ",
+        chat_id=chat_id, 
+        message_id=message_id,
+        reply_markup=catalog_categories_keyboard()
+    )
+
+@dp.callback_query_handler(lambda call: 'back_to_subcategories' in call.data)
+async def back_to_subcategories(call: CallbackQuery, state: FSMContext):
+    """
+    Back to subcategories list
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+    category_id = data.get('category_id')
+    await bot.edit_message_text(
+        text="Выберите подкатегорию: ",
+        chat_id=chat_id, 
+        message_id=message_id,
+        reply_markup=catalog_subcategories_keyboard(category_id)
+    )
+
 @dp.message_handler(lambda message: 'Главное меню' in message.text)
 async def back_to_main(message: Message):
     """
@@ -122,32 +196,6 @@ async def back_to_main(message: Message):
     )
     await main_menu(message)
 
-@dp.callback_query_handler(lambda call: 'category_' in call.data)
-async def catalog_subcategories_list(call: CallbackQuery):
-    """
-    Reaction on call button
-    """
-    chat_id, _, _, _, message_id = default_call(call)
-    category_id = int(call.data.split('_')[-1])
-    await bot.edit_message_text(
-        text='Выберите подкатегорию:',
-        chat_id=chat_id,
-        message_id=message_id,
-        reply_markup=catalog_subcategories_keyboard(category_id)
-    )
-
-@dp.callback_query_handler(lambda call: 'Назад' in call.data)
-async def back_to_categories(call: CallbackQuery):
-    """
-    Back to categories list
-    """
-    chat_id, _, _, _, message_id = default_call(call)
-    await bot.edit_message_text(
-        text="Выберите категорию: ",
-        chat_id=chat_id, 
-        message_id=message_id,
-        reply_markup=catalog_categories_keyboard()
-    )
 
 
 executor.start_polling(dp)

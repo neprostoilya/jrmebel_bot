@@ -37,7 +37,9 @@ class Orders(models.Model):
         null=True
     )
     description = models.TextField(
-        verbose_name='Описание'
+        verbose_name='Описание',
+        blank=True,
+        null=True
     )
     image = models.ImageField(
         upload_to='orders/', 

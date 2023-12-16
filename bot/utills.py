@@ -24,21 +24,20 @@ def post(point: str, data: json):
     except:
         return None
 
-def check_user(chat_id: int):
+def check_user(chat_id: str):
     """
     Check User
     """
     data = get('users/users')
     for _ in data:
-        if _['telegram_pk'] != chat_id:
+        if _['telegram_pk'] == str(chat_id):
             return True
-
-
+        
 def register_user(username: str, phone: int, chat_id: int):
     """
     Register User
     """
-    data = {'username': f'{username}', 'phone': f'{phone}', \
+    data = {'username': f'{username[0]}', 'phone': f'{phone}', \
         'telegram_pk': f'{chat_id}'}
     return post('users/register/', data)
 
@@ -54,6 +53,13 @@ def get_categories():
     Get Categories Firnitures
     """
     data = get('catalog/get_categories/')
+    return data
+
+def get_styles():
+    """
+    Get Styles Firnitures
+    """
+    data = get('catalog/get_styles/')
     return data
 
 def get_subcategories_by_category(category: str):

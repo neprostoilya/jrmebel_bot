@@ -1,4 +1,5 @@
-from utills import get_categories, get_subcategories_by_category
+from utills import get_categories, get_subcategories_by_category, \
+    get_styles
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardButton, InlineKeyboardMarkup
@@ -30,13 +31,7 @@ def back_to_main_menu_keyboard() -> dict:
     Back to main menu
     """
     return ReplyKeyboardMarkup([
-        [KeyboardButton(text='Главное меню')]
-    ], resize_keyboard=True)
-
-def back_to_categories_keyboard() -> dict:
-    """ Кнопка возвращения назад. """
-    return ReplyKeyboardMarkup([
-        [KeyboardButton(text='⬅ Назад')]
+        [KeyboardButton(text='↩ Главное меню')]
     ], resize_keyboard=True)
 
 def catalog_categories_keyboard() -> dict:
@@ -49,7 +44,7 @@ def catalog_categories_keyboard() -> dict:
     for category in categories:
         bnt = InlineKeyboardButton(
             text=category['title'],
-            callback_data=f"category_{category['pk']}"
+            callback_data=f"categories_{category['pk']}"
         )
         buttons.append(bnt)
     markup.add(*buttons)
@@ -70,6 +65,40 @@ def catalog_subcategories_keyboard(category_id: int) -> dict:
         buttons.append(bnt)
     markup.add(*buttons)
     markup.row(
-    InlineKeyboardButton(text='⬅ Назад', callback_data='Назад')
+    InlineKeyboardButton(text='⬅ Назад', callback_data='back_to_categories')
     )
+    return markup
+
+def catalog_styles_keyboard() -> dict:
+    """
+    Catalog styles keyboard
+    """
+    markup = InlineKeyboardMarkup(row_width=2)
+    buttons = []
+    styles = get_styles()
+    for style in styles:
+        bnt = InlineKeyboardButton(
+            text=style['title'],
+            callback_data=f"style_{style['pk']}"
+        )
+        buttons.append(bnt)
+    markup.add(*buttons)
+    markup.row(
+    InlineKeyboardButton(text='⬅ Назад', callback_data='back_to_subcategories')
+    )
+    return markup
+
+def catalog_furnitures_keyboard(quantity_furnitures: int, furniture: int) -> dict:
+    """
+    View and buy furnitures
+    """
+    markup = InlineKeyboardMarkup(row_width=3)
+    buttons = [
+        InlineKeyboardButton(text='⬅', callback_data='action_-'),
+        InlineKeyboardButton(text=f'{furniture}/{quantity_furnitures}', callback_data=f'{furniture}'),
+        InlineKeyboardButton(text='➡', callback_data='action_+'),
+        InlineKeyboardButton(text='✅ Заказать', callback_data='create_order'),
+        InlineKeyboardButton(text='↩ Главное меню', callback_data='back_to_main_menu')
+    ]
+    markup.add(*buttons)
     return markup
