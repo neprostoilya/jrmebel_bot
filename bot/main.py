@@ -1,5 +1,7 @@
-from config import TOKEN
-from utills import check_user, login_user, register_user, get_categories, \
+import requests
+from utils import get_text_furnitures
+from config import TOKEN, URL
+from db import check_user, login_user, register_user, get_categories, \
     get_furnitures_by_category_and_style, get_subcategories_by_category
 from keyboards import phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
@@ -131,11 +133,13 @@ async def catalog_subcategories_list(call: CallbackQuery, state: FSMContext):
     )
 
 @dp.callback_query_handler(lambda call: 'subcategory_' in call.data)
-async def catalog_styles_list(call: CallbackQuery):
+async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
+    subcategory_id = int(call.data.split('_')[-1])
+    await state.update_data(subcategory_id=subcategory_id) 
     await bot.edit_message_text(
         text='Выберите стиль:',
         chat_id=chat_id,
@@ -143,18 +147,33 @@ async def catalog_styles_list(call: CallbackQuery):
         reply_markup=catalog_styles_keyboard()
     )
 
-# @dp.callback_query_handler(lambda call: 'style_' in call.data)
-# async def catalog_furnitures(call: CallbackQuery):
-#     """
-#     Reaction on call button
-#     """
-#     chat_id, _, _, _, message_id = default_call(call)
-#     await bot.edit_message_text(
-#         text='Выберите мебель:',
-#         chat_id=chat_id,
-#         message_id=message_id,
-#         reply_markup=catalog_furnitures_keyboard()
-#     )   
+@dp.callback_query_handler(lambda call: 'style_' in call.data)
+async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+    category_id = data.get('subcategory_id')
+    style_id = int(call.data.split('_')[-1])
+    image, pk, text, furniture = get_text_furnitures(
+        category_id=category_id,
+        style_id=style_id,
+        furniture=1
+    )
+    
+    response = requests.get(f'{URL}{image[1::]}/')
+    if response.status_code == 200:
+        with open("media/image.jpg", "wb") as file:
+            file.write(response.content)
+    
+    with open("media/image.jpg", "rb") as photo:
+        await bot.send_photo(
+            chat_id=chat_id, 
+            photo=photo, 
+            caption=text, 
+            reply_markup=catalog_furnitures_keyboard()
+        )
 
 @dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
 async def back_to_categories(call: CallbackQuery):

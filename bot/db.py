@@ -73,5 +73,5 @@ def get_furnitures_by_category_and_style(category, style):
     """
     Get Furnitures by Category and Style
     """
-    data = get(f'get_furnitures/{category}/{style}/')
+    data = get(f'catalog/get_furnitures/{category}/{style}/')
     return data

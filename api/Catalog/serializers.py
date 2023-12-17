@@ -23,5 +23,5 @@ class FurnituresSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Furnitures
-        fields = ('pk', 'title', 'subcategory', 'image', 'description', 'category', 'style')
+        fields = ('pk', 'title', 'category', 'image', 'description',  'style', 'get_style_title', 'get_category_title')
 

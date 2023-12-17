@@ -1,4 +1,4 @@
-from utills import get_categories, get_subcategories_by_category, \
+from db import get_categories, get_subcategories_by_category, \
     get_styles
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
@@ -88,17 +88,17 @@ def catalog_styles_keyboard() -> dict:
     )
     return markup
 
-def catalog_furnitures_keyboard(quantity_furnitures: int, furniture: int) -> dict:
+def catalog_furnitures_keyboard() -> dict:
     """
     View and buy furnitures
     """
     markup = InlineKeyboardMarkup(row_width=3)
     buttons = [
         InlineKeyboardButton(text='⬅', callback_data='action_-'),
-        InlineKeyboardButton(text=f'{furniture}/{quantity_furnitures}', callback_data=f'{furniture}'),
+        # InlineKeyboardButton(text=f'{furniture}/{quantity_furnitures}', callback_data=f'{furniture}'),
+        InlineKeyboardButton(text='12/23', callback_data='furniture_12'),
         InlineKeyboardButton(text='➡', callback_data='action_+'),
         InlineKeyboardButton(text='✅ Заказать', callback_data='create_order'),
-        InlineKeyboardButton(text='↩ Главное меню', callback_data='back_to_main_menu')
     ]
     markup.add(*buttons)
     return markup

@@ -97,6 +97,11 @@ class Furnitures(models.Model):
     img_preview.allow_tags = True
     img_preview.short_description = 'Миниатюра'
 
+    def get_category_title(self):
+        return self.category.title
+
+    def get_style_title(self):
+        return self.style.title
 
     class Meta:
         verbose_name = 'Мебель'
