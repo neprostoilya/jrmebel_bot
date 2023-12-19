@@ -88,15 +88,14 @@ def catalog_styles_keyboard() -> dict:
     )
     return markup
 
-def catalog_furnitures_keyboard() -> dict:
+def catalog_furnitures_keyboard(get_furniture, quantity_furnitures) -> dict:
     """
     View and buy furnitures
     """
     markup = InlineKeyboardMarkup(row_width=3)
     buttons = [
         InlineKeyboardButton(text='⬅', callback_data='action_-'),
-        # InlineKeyboardButton(text=f'{furniture}/{quantity_furnitures}', callback_data=f'{furniture}'),
-        InlineKeyboardButton(text='12/23', callback_data='furniture_12'),
+        InlineKeyboardButton(text=f'{get_furniture}/{quantity_furnitures}', callback_data=f'furnitures_{get_furniture}'),
         InlineKeyboardButton(text='➡', callback_data='action_+'),
         InlineKeyboardButton(text='✅ Заказать', callback_data='create_order'),
     ]

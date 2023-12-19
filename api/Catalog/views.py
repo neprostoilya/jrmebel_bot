@@ -64,7 +64,8 @@ class FurnituresAPIView(APIView):
         """
         furnitures = Furnitures.objects.filter(
             category=category,
-            style=style
+            style=style,
         )
         serializer = FurnituresSerializer(furnitures, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+    

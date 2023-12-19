@@ -1,5 +1,5 @@
 import requests
-from utils import get_text_furnitures
+from utils import get_furnitures
 from config import TOKEN, URL
 from db import check_user, login_user, register_user, get_categories, \
     get_furnitures_by_category_and_style, get_subcategories_by_category
@@ -156,12 +156,17 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     data = await state.get_data() 
     category_id = data.get('subcategory_id')
     style_id = int(call.data.split('_')[-1])
-    image, pk, text, furniture = get_text_furnitures(
+    image, pk, text, get_furniture, quantity_furnitures = get_furnitures(
         category_id=category_id,
         style_id=style_id,
-        furniture=1
+        pk=4
     )
     
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
     response = requests.get(f'{URL}{image[1::]}/')
     if response.status_code == 200:
         with open("media/image.jpg", "wb") as file:
@@ -172,7 +177,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
             chat_id=chat_id, 
             photo=photo, 
             caption=text, 
-            reply_markup=catalog_furnitures_keyboard()
+            reply_markup=catalog_furnitures_keyboard(get_furniture, quantity_furnitures)
         )
 
 @dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
