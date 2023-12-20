@@ -2,25 +2,24 @@ from db import get_furnitures_by_category_and_style
 
 
 def get_furnitures(category_id: int, style_id: int, pk: int):
-    """
-    Text for furniture
-    """
     furnitures = get_furnitures_by_category_and_style(
         category=category_id,
         style=style_id
     )
-    for _ in furnitures[pk]:
+    quantity_furnitures = len(furnitures)
+    if pk <= quantity_furnitures - 1:
+        furniture = furnitures[pk]
         text = f'''
-Название: {_['title']}
+Название: {furniture['title']}
 
 Описание:
-{_['description']} 
+{furniture['description']} 
 
-Категория: {_['get_category_title']} 
-Стиль: {_['get_style_title']} 
-        '''
-        image = _['image']
-        pk = _['pk']
-    get_furniture = pk + 1
-    quantity_furnitures = len(furnitures)
-    return image, pk, text, get_furniture, quantity_furnitures
+Категория: {furniture['get_category_title']} 
+Стиль: {furniture['get_style_title']} 
+    '''
+        image = furniture['image']
+        pk = pk + 1
+        return image, pk, text, quantity_furnitures
+    else:
+        raise ValueError

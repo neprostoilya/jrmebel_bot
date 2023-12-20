@@ -156,11 +156,15 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     data = await state.get_data() 
     category_id = data.get('subcategory_id')
     style_id = int(call.data.split('_')[-1])
-    image, pk, text, get_furniture, quantity_furnitures = get_furnitures(
+    await state.update_data(style_id=style_id) 
+
+    image, pk, text, quantity_furnitures = get_furnitures(
         category_id=category_id,
         style_id=style_id,
-        pk=4
+        pk=0
     )
+    
+    await state.update_data(pk=pk) 
     
     await bot.delete_message(
         chat_id=chat_id,
@@ -177,7 +181,81 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
             chat_id=chat_id, 
             photo=photo, 
             caption=text, 
-            reply_markup=catalog_furnitures_keyboard(get_furniture, quantity_furnitures)
+            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures)
+        )
+
+@dp.callback_query_handler(lambda call: 'action_+' in call.data)
+async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+    category_id = data.get('subcategory_id')
+    style_id = data.get('style_id')
+    pk = data.get('pk')
+
+    image, pk, text, quantity_furnitures = get_furnitures(
+        category_id=category_id,
+        style_id=style_id,
+        pk=pk
+    )
+    
+    await state.update_data(pk=pk) 
+    
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    response = requests.get(f'{URL}{image[1::]}/')
+    if response.status_code == 200:
+        with open("media/image.jpg", "wb") as file:
+            file.write(response.content)
+    
+    with open("media/image.jpg", "rb") as photo:
+        await bot.send_photo(
+            chat_id=chat_id, 
+            photo=photo, 
+            caption=text, 
+            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures)
+        )
+
+@dp.callback_query_handler(lambda call: 'action_-' in call.data)
+async def catalog_action_(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+    category_id = data.get('subcategory_id')
+    style_id = data.get('style_id')
+    pk = data.get('pk')
+
+    image, pk, text, quantity_furnitures = get_furnitures(
+        category_id=category_id,
+        style_id=style_id,
+        pk=pk
+    )
+    
+    await state.update_data(pk=pk) 
+    
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    response = requests.get(f'{URL}{image[1::]}/')
+    if response.status_code == 200:
+        with open("media/image.jpg", "wb") as file:
+            file.write(response.content)
+    
+    with open("media/image.jpg", "rb") as photo:
+        await bot.send_photo(
+            chat_id=chat_id, 
+            photo=photo, 
+            caption=text, 
+            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures)
         )
 
 @dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
@@ -219,7 +297,5 @@ async def back_to_main(message: Message):
         message_id=message_id - 1
     )
     await main_menu(message)
-
-
 
 executor.start_polling(dp)
