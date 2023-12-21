@@ -75,3 +75,13 @@ def get_furnitures_by_category_and_style(category, style):
     """
     data = get(f'catalog/get_furnitures/{category}/{style}/')
     return data
+
+def create_order(user, furniture, size, material, color, \
+    description, image, status, completed):
+    """
+    Create Order
+    """
+    data = {'user': f'{user}', 'furniture': f'{furniture}', 'size': f'{size}', 
+        'material': f'{material}','color': f'{color}','description': f'{description}',
+        'status': f'{status}','completed': f'{completed}','image': f'{image}'}
+    return post('order/create_order/', data)

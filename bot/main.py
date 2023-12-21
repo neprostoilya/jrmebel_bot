@@ -10,10 +10,19 @@ from keyboards import phone_button_keyboard, main_menu_keyboard, \
 
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import Bot, Dispatcher, executor
 from aiogram.types import Message, CallbackQuery
 
 storage = MemoryStorage()
+
+class Questions(StatesGroup):
+    furniture = State()
+    size = State()
+    material = State()
+    color = State()
+    description = State()
+    image = State()
 
 bot = Bot(TOKEN, parse_mode='HTML')
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -158,13 +167,13 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     style_id = int(call.data.split('_')[-1])
     await state.update_data(style_id=style_id) 
 
-    image, pk, text, quantity_furnitures = get_furnitures(
+    image, pk, text, quantity_furnitures, get_pk = get_furnitures(
         category_id=category_id,
         style_id=style_id,
         pk=0
     )
     
-    await state.update_data(pk=pk) 
+    await state.update_data(pk=0) 
     
     await bot.delete_message(
         chat_id=chat_id,
@@ -181,7 +190,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
             chat_id=chat_id, 
             photo=photo, 
             caption=text, 
-            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures)
+            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
         )
 
 @dp.callback_query_handler(lambda call: 'action_+' in call.data)
@@ -193,15 +202,15 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     data = await state.get_data() 
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
-    pk = data.get('pk')
+    pk = data.get('pk') + 1
+    await state.update_data(pk=pk) 
 
-    image, pk, text, quantity_furnitures = get_furnitures(
+    image, pk, text, quantity_furnitures, get_pk = get_furnitures(
         category_id=category_id,
         style_id=style_id,
         pk=pk
     )
     
-    await state.update_data(pk=pk) 
     
     await bot.delete_message(
         chat_id=chat_id,
@@ -218,11 +227,11 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
             chat_id=chat_id, 
             photo=photo, 
             caption=text, 
-            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures)
+            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
         )
 
 @dp.callback_query_handler(lambda call: 'action_-' in call.data)
-async def catalog_action_(call: CallbackQuery, state: FSMContext):
+async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
@@ -230,15 +239,14 @@ async def catalog_action_(call: CallbackQuery, state: FSMContext):
     data = await state.get_data() 
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
-    pk = data.get('pk')
+    pk = data.get('pk')-1
+    await state.update_data(pk=pk) 
 
-    image, pk, text, quantity_furnitures = get_furnitures(
+    image, pk, text, quantity_furnitures, get_pk = get_furnitures(
         category_id=category_id,
         style_id=style_id,
         pk=pk
     )
-    
-    await state.update_data(pk=pk) 
     
     await bot.delete_message(
         chat_id=chat_id,
@@ -255,7 +263,7 @@ async def catalog_action_(call: CallbackQuery, state: FSMContext):
             chat_id=chat_id, 
             photo=photo, 
             caption=text, 
-            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures)
+            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
         )
 
 @dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
@@ -297,5 +305,20 @@ async def back_to_main(message: Message):
         message_id=message_id - 1
     )
     await main_menu(message)
+
+@dp.callback_query_handler(lambda call: 'create_order_' in call.data, state=Questions.furniture)
+async def create_order(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    await bot.send_message(
+        chat_id=chat_id,
+        text='Для заказа нужен размер мебели Пример: 2x5 '
+    )
+    async with state.proxy() as data:
+        data['furniture'] = int(call.data.split('_')[-1])
+
+    await Questions.next()
 
 executor.start_polling(dp)

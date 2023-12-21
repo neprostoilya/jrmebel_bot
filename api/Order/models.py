@@ -47,9 +47,6 @@ class Orders(models.Model):
         blank=True,
         null=True
     )
-    date_to = models.DateField(
-        verbose_name='До даты',
-    )
     status = models.CharField(
         verbose_name='Статус'
     )
