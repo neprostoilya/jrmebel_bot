@@ -21,29 +21,8 @@ class Orders(models.Model):
         blank=True,
         null=True
     )
-    size = models.CharField(
-        verbose_name='Размер',
-        blank=True,
-        null=True
-    )
-    material = models.CharField(
-        verbose_name='Материал',
-        blank=True,
-        null=True
-    )
-    color = models.CharField(
-        verbose_name='Цвет',
-        blank=True,
-        null=True
-    )
     description = models.TextField(
         verbose_name='Описание',
-        blank=True,
-        null=True
-    )
-    image = models.ImageField(
-        upload_to='orders/', 
-        verbose_name='Фото',
         blank=True,
         null=True
     )
@@ -60,19 +39,12 @@ class Orders(models.Model):
     descriptiontrim.allow_tags = True
     descriptiontrim.short_description = 'Описание'
 
-    def img_preview(self): 
-            return mark_safe(f'<img src="{self.image.url}" width="75px" height="75px"/>')
-    
-    img_preview.allow_tags = True
-    img_preview.short_description = 'Миниатюра'
-
     def __str__(self):
         return self.user.username
     
     def __repr__(self):
-        return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, \
-            size={self.size}, color={self.color}, image={self.image}, \
-            description={self.description}, material={self.material}'
+        return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, description={self.description}'
+           
 
     class Meta:
         verbose_name = 'Заказ'

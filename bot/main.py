@@ -1,9 +1,9 @@
 import requests
 from utils import get_furnitures
 from config import TOKEN, URL
-from db import check_user, login_user, register_user, get_categories, \
+from db import check_user, create_order, get_user, login_user, register_user, get_categories, \
     get_furnitures_by_category_and_style, get_subcategories_by_category
-from keyboards import phone_button_keyboard, main_menu_keyboard, \
+from keyboards import confirmation_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
     catalog_furnitures_keyboard
@@ -16,13 +16,9 @@ from aiogram.types import Message, CallbackQuery
 
 storage = MemoryStorage()
 
-class Questions(StatesGroup):
+class Create_order(StatesGroup):
     furniture = State()
-    size = State()
-    material = State()
-    color = State()
     description = State()
-    image = State()
 
 bot = Bot(TOKEN, parse_mode='HTML')
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -306,19 +302,71 @@ async def back_to_main(message: Message):
     )
     await main_menu(message)
 
-@dp.callback_query_handler(lambda call: 'create_order_' in call.data, state=Questions.furniture)
-async def create_order(call: CallbackQuery, state: FSMContext):
+# @dp.callback_query_handler(lambda call: 'confirmation_rejected' in call.data)
+# async def confirmation_rejected(call: CallbackQuery, state: FSMContext):
+#     """
+#     Back to main menu
+#     """
+#     await 
+    
+@dp.callback_query_handler(lambda call: 'create_order_' in call.data)
+async def confirmation(call: CallbackQuery):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    furniture = int(call.data.split('_')[-1])
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+    await bot.send_message(
+        chat_id=chat_id,
+        text='Вы уверены что хотите заказать эту мебель?',
+        reply_markup=confirmation_keyboard(furniture)
+    )
+    await Create_order.furniture.set()
+
+@dp.callback_query_handler(lambda call: 'confirmation_confirmed_' in call.data, state=Create_order.furniture)
+async def get_furniture_for_order(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
     await bot.send_message(
         chat_id=chat_id,
-        text='Для заказа нужен размер мебели Пример: 2x5 '
+        text='Для заказа отправьте описание заказа.'
     )
     async with state.proxy() as data:
         data['furniture'] = int(call.data.split('_')[-1])
 
-    await Questions.next()
+    await Create_order.next()
+
+@dp.message_handler(content_types=['text'], state=Create_order.description)
+async def get_description_for_order(message: Message, state: FSMContext):
+    """
+    Reaction on description
+    """
+    chat_id = message.chat.id
+    description = message.text
+    
+    await bot.send_message(
+        chat_id=chat_id,
+        text='Заказ создан, подождите некторое время пока мененджеры примут ваш заказ.'
+    )
+    async with state.proxy() as data:
+        data['description'] = description
+        furniture = int(data['furniture'])
+
+    await create_order(
+        user=get_user(chat_id),
+        furniture=furniture,
+        description=description,
+        status='Ожидание принятия заказа',
+        completed=False
+    )
+
+    await state.finish()
 
 executor.start_polling(dp)

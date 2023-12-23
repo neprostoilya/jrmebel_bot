@@ -8,6 +8,5 @@ class OrdersAdmin(admin.ModelAdmin):
     """
     Orders 
     """
-    list_display = ('pk', 'user', 'furniture', 'material',
-                    'color', 'size', 'descriptiontrim', 'status', 'completed', 'img_preview')
+    list_display = ('pk', 'user', 'furniture', 'descriptiontrim', 'status', 'completed')
     list_display_links = ('pk', )

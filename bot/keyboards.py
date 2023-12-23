@@ -101,3 +101,15 @@ def catalog_furnitures_keyboard(pk: int, quantity_furnitures: int, get_pk_furnit
     ]
     markup.add(*buttons)
     return markup
+
+def confirmation_keyboard(furniture: int):
+    """
+    Confirmation
+    """
+    markup = InlineKeyboardMarkup(row_width=2)
+    buttons = [
+        InlineKeyboardButton(text='❎', callback_data=f'confirmation_rejected'),
+        InlineKeyboardButton(text='✅', callback_data=f'confirmation_confirmed_{furniture}'),
+    ]
+    markup.add(*buttons)
+    return markup
