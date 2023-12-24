@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = UserProfile
-        fields = ('username', 'phone', 'telegram_pk')
+        fields = ('pk', 'username', 'phone', 'telegram_pk')
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """

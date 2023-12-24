@@ -2,13 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from Catalog.models import Categories, Styles, Furnitures
+from Catalog.models import Categories, Styles, Furnitures, Gallery
 from Catalog.serializers import CategoriesSerializer, \
-    StylesSerializer, FurnituresSerializer
-from Catalog.logics.view_logics import get_categories, \
-    get_all_styles, get_furniture_by_category_and_style, \
-    get_subcategories_by_category
-
+    StylesSerializer, FurnituresSerializer, GallerySerializer
+from Catalog.logics.view_logics import get_subcategories_by_category
+    
 class CategoriesAPIView(APIView):
     """
     View Categories
@@ -67,5 +65,20 @@ class FurnituresAPIView(APIView):
             style=style,
         )
         serializer = FurnituresSerializer(furnitures, many=True)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+class GalleryAPIView(APIView):
+    """
+    View Gallery
+    """
+
+    def get(self, request, furniture):
+        """
+        Get Gallery
+        """
+        furnitures = Gallery.objects.filter(
+            furniture=furniture
+        )
+        serializer = GallerySerializer(furnitures, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     

@@ -106,6 +106,16 @@ async def main_menu(message: Message):
         reply_markup=main_menu_keyboard()
     )
 
+async def main_menu_call(call: CallbackQuery):
+    """
+    Main Menu
+    """
+    await bot.answer(
+        text='Выберите направление:',
+        reply_markup=main_menu_keyboard()
+    )
+
+
 @dp.message_handler(lambda message: '🧾 Каталог' in message.text)
 async def catalog_categories_list(message: Message):
     """
@@ -163,7 +173,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     style_id = int(call.data.split('_')[-1])
     await state.update_data(style_id=style_id) 
 
-    image, pk, text, quantity_furnitures, get_pk = get_furnitures(
+    images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
         category_id=category_id,
         style_id=style_id,
         pk=0
@@ -176,18 +186,19 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
         message_id=message_id
     )
 
-    response = requests.get(f'{URL}{image[1::]}/')
-    if response.status_code == 200:
-        with open("media/image.jpg", "wb") as file:
-            file.write(response.content)
-    
-    with open("media/image.jpg", "rb") as photo:
-        await bot.send_photo(
-            chat_id=chat_id, 
-            photo=photo, 
-            caption=text, 
-            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
-        )
+    for image in images_path:
+        response = requests.get(f'{URL}{image[1::]}/')
+        if response.status_code == 200:
+            with open(f"media_bot/{image[17::]}", "wb") as file:
+                file.write(response.content)
+                
+        with open(f"media_bot/{image[17::]}", "rb") as photo:
+            await bot.send_photo(
+                chat_id=chat_id, 
+                photo=photo, 
+                caption=text, 
+                reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+            )
 
 @dp.callback_query_handler(lambda call: 'action_+' in call.data)
 async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
@@ -302,12 +313,12 @@ async def back_to_main(message: Message):
     )
     await main_menu(message)
 
-# @dp.callback_query_handler(lambda call: 'confirmation_rejected' in call.data)
-# async def confirmation_rejected(call: CallbackQuery, state: FSMContext):
-#     """
-#     Back to main menu
-#     """
-#     await 
+@dp.callback_query_handler(lambda call: 'confirmation_rejected' in call.data)
+async def confirmation_rejected(call: CallbackQuery, state: FSMContext):
+    """
+    Back to main menu
+    """
+    await main_menu_call(call)
     
 @dp.callback_query_handler(lambda call: 'create_order_' in call.data)
 async def confirmation(call: CallbackQuery):
@@ -359,14 +370,15 @@ async def get_description_for_order(message: Message, state: FSMContext):
         data['description'] = description
         furniture = int(data['furniture'])
 
-    await create_order(
+    create_order(
         user=get_user(chat_id),
         furniture=furniture,
         description=description,
         status='Ожидание принятия заказа',
         completed=False
     )
-
+    
     await state.finish()
+    await main_menu(message)
 
 executor.start_polling(dp)

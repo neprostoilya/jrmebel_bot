@@ -92,5 +92,14 @@ def get_user(chat_id: str):
     data = get('users/users')
     for _ in data:
         if _['telegram_pk'] == str(chat_id):
-            print(_, '---------------------')
-            return 5974014808
+            return _['pk']
+        
+def get_gallery(furniture_pk: int):
+    """
+    Get Gallery by furniture pk
+    """
+    data = get(f'catalog/get_gallery/{furniture_pk}/')
+    images_path = []
+    for _ in data:
+        images_path.append(_['image'])
+    return images_path

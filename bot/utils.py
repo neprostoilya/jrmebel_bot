@@ -1,5 +1,4 @@
-from db import get_furnitures_by_category_and_style
-
+from db import get_furnitures_by_category_and_style, get_gallery
 
 def get_furnitures(category_id: int, style_id: int, pk: int):
     furnitures = get_furnitures_by_category_and_style(
@@ -18,9 +17,11 @@ def get_furnitures(category_id: int, style_id: int, pk: int):
 Категория: {furniture['get_category_title']} 
 Стиль: {furniture['get_style_title']} 
     '''
-        image = furniture['image']
         get_pk = furniture['pk']
-        return image, pk, text, quantity_furnitures, get_pk
+        images_path = []
+        images_path += get_gallery(get_pk)
+        images_path.append(furniture['image'])
+        return images_path, pk, text, quantity_furnitures, get_pk
     else:
         raise ValueError
     
