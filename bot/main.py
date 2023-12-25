@@ -12,7 +12,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import Bot, Dispatcher, executor
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, MediaGroup, InputFile
 
 storage = MemoryStorage()
 
@@ -115,7 +115,6 @@ async def main_menu_call(call: CallbackQuery):
         reply_markup=main_menu_keyboard()
     )
 
-
 @dp.message_handler(lambda message: '🧾 Каталог' in message.text)
 async def catalog_categories_list(message: Message):
     """
@@ -186,19 +185,23 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
         message_id=message_id
     )
 
-    for image in images_path:
-        response = requests.get(f'{URL}{image[1::]}/')
-        if response.status_code == 200:
-            with open(f"media_bot/{image[17::]}", "wb") as file:
-                file.write(response.content)
-                
-        with open(f"media_bot/{image[17::]}", "rb") as photo:
-            await bot.send_photo(
-                chat_id=chat_id, 
-                photo=photo, 
-                caption=text, 
-                reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
-            )
+    # media = MediaGroup()
+    # media.attach_photo(InputFile('media_bot/2023-12-19_21-07-19.png'), 'Превосходная фотография')
+    # media.attach_photo(InputFile('media_bot/12_ayYtArI.jpg'), 'Превосходная фотография 2')
+    # media.attach_photo(InputFile('media_bot/category_модульная спальня Леди.jpg'), 'Превосходная фотография 3')
+    # media.attach_photo(InputFile('media_bot/category_модульная спальня Леди.jpg'), 'Превосходная фотография 3')
+    # await bot.send_media_group(
+    #     chat_id=chat_id,
+    #     media=media
+    # )
+
+    
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+    )
 
 @dp.callback_query_handler(lambda call: 'action_+' in call.data)
 async def catalog_action_plus(call: CallbackQuery, state: FSMContext):

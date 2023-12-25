@@ -12,7 +12,7 @@ def get_furnitures(category_id: int, style_id: int, pk: int):
 Название: {furniture['title']}
 
 Описание:
-{furniture['description']} 
+{furniture['description']}                                                                                 
 
 Категория: {furniture['get_category_title']} 
 Стиль: {furniture['get_style_title']} 
