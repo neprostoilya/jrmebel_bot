@@ -1,8 +1,7 @@
 import requests
-from utils import get_furnitures
-from config import TOKEN, URL
-from db import check_user, create_order, get_user, login_user, register_user, get_categories, \
-    get_furnitures_by_category_and_style, get_subcategories_by_category
+from utils import get_furnitures, get_text_to_manager
+from config import TOKEN
+from db import check_user, create_order, get_phone, get_user, login_user, register_user
 from keyboards import confirmation_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
@@ -12,7 +11,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import Bot, Dispatcher, executor
-from aiogram.types import Message, CallbackQuery, MediaGroup, InputFile
+from aiogram.types import Message, CallbackQuery, MediaGroup, InputFile, ReplyKeyboardRemove
 
 storage = MemoryStorage()
 
@@ -110,7 +109,9 @@ async def main_menu_call(call: CallbackQuery):
     """
     Main Menu
     """
-    await bot.answer(
+    chat_id, _, _, _, _ = default_call(call)
+    await bot.send_message(
+        chat_id=chat_id,
         text='Выберите направление:',
         reply_markup=main_menu_keyboard()
     )
@@ -185,18 +186,23 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
         message_id=message_id
     )
 
-    # media = MediaGroup()
-    # media.attach_photo(InputFile('media_bot/2023-12-19_21-07-19.png'), 'Превосходная фотография')
-    # media.attach_photo(InputFile('media_bot/12_ayYtArI.jpg'), 'Превосходная фотография 2')
-    # media.attach_photo(InputFile('media_bot/category_модульная спальня Леди.jpg'), 'Превосходная фотография 3')
-    # media.attach_photo(InputFile('media_bot/category_модульная спальня Леди.jpg'), 'Превосходная фотография 3')
-    # await bot.send_media_group(
-    #     chat_id=chat_id,
-    #     media=media
-    # )
+    count = 0
+    media = MediaGroup()
 
+    for path in images_path:
+        media.attach_photo(
+            photo=InputFile(f'api{path}'), 
+            caption='Фото'
+        )
+        count += 1
+
+    await state.update_data(count=count) 
+
+    await bot.send_media_group(
+        chat_id=chat_id,
+        media=media
+    )
     
-
     await bot.send_message(
         chat_id=chat_id,
         text=text,
@@ -215,30 +221,46 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     pk = data.get('pk') + 1
     await state.update_data(pk=pk) 
 
-    image, pk, text, quantity_furnitures, get_pk = get_furnitures(
+    images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
         category_id=category_id,
         style_id=style_id,
         pk=pk
     )
-    
-    
+
     await bot.delete_message(
         chat_id=chat_id,
         message_id=message_id
     )
 
-    response = requests.get(f'{URL}{image[1::]}/')
-    if response.status_code == 200:
-        with open("media/image.jpg", "wb") as file:
-            file.write(response.content)
-    
-    with open("media/image.jpg", "rb") as photo:
-        await bot.send_photo(
-            chat_id=chat_id, 
-            photo=photo, 
-            caption=text, 
-            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+    num = data.get('count')
+    count = 0
+    media = MediaGroup()
+
+    for path in images_path:
+        media.attach_photo(
+            photo=InputFile(f'api{path}'), 
+            caption='Фото'
         )
+        count += 1
+
+    await state.update_data(count=count) 
+
+    await bot.send_media_group(
+        chat_id=chat_id,
+        media=media
+    )
+
+    for _ in range(num):
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id - (_+count)
+        )
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+    )
 
 @dp.callback_query_handler(lambda call: 'action_-' in call.data)
 async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
@@ -252,7 +274,7 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     pk = data.get('pk')-1
     await state.update_data(pk=pk) 
 
-    image, pk, text, quantity_furnitures, get_pk = get_furnitures(
+    images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
         category_id=category_id,
         style_id=style_id,
         pk=pk
@@ -263,18 +285,35 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
         message_id=message_id
     )
 
-    response = requests.get(f'{URL}{image[1::]}/')
-    if response.status_code == 200:
-        with open("media/image.jpg", "wb") as file:
-            file.write(response.content)
-    
-    with open("media/image.jpg", "rb") as photo:
-        await bot.send_photo(
-            chat_id=chat_id, 
-            photo=photo, 
-            caption=text, 
-            reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+    num = data.get('count')
+    count = 0
+    media = MediaGroup()
+
+    for path in images_path:
+        media.attach_photo(
+            photo=InputFile(f'api{path}'), 
+            caption='Фото'
         )
+        count += 1
+
+    await state.update_data(count=count) 
+
+    await bot.send_media_group(
+        chat_id=chat_id,
+        media=media
+    )
+
+    for _ in range(num):
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id - (_+count-1)
+        )
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+    )
 
 @dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
 async def back_to_categories(call: CallbackQuery):
@@ -315,32 +354,42 @@ async def back_to_main(message: Message):
         message_id=message_id - 1
     )
     await main_menu(message)
-
-@dp.callback_query_handler(lambda call: 'confirmation_rejected' in call.data)
-async def confirmation_rejected(call: CallbackQuery, state: FSMContext):
-    """
-    Back to main menu
-    """
-    await main_menu_call(call)
     
 @dp.callback_query_handler(lambda call: 'create_order_' in call.data)
-async def confirmation(call: CallbackQuery):
+async def confirmation(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
     furniture = int(call.data.split('_')[-1])
 
-    await bot.delete_message(
-        chat_id=chat_id,
-        message_id=message_id
-    )
+    data = await state.get_data() 
+    num = data.get('count')
+    for _ in range(num+1):
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id - _
+        )
+
     await bot.send_message(
         chat_id=chat_id,
         text='Вы уверены что хотите заказать эту мебель?',
         reply_markup=confirmation_keyboard(furniture)
     )
     await Create_order.furniture.set()
+
+@dp.callback_query_handler(lambda call: 'confirmation_rejected_' in call.data, state=Create_order.furniture)
+async def confirmation_rejected(call: CallbackQuery, state: FSMContext):
+    """
+    Back to main menu
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    await state.set_state(None)
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+    await main_menu_call(call)
 
 @dp.callback_query_handler(lambda call: 'confirmation_confirmed_' in call.data, state=Create_order.furniture)
 async def get_furniture_for_order(call: CallbackQuery, state: FSMContext):
@@ -350,7 +399,8 @@ async def get_furniture_for_order(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, _, message_id = default_call(call)
     await bot.send_message(
         chat_id=chat_id,
-        text='Для заказа отправьте описание заказа.'
+        text='Для заказа отправьте описание заказа.',
+        reply_markup=ReplyKeyboardRemove()
     )
     async with state.proxy() as data:
         data['furniture'] = int(call.data.split('_')[-1])
@@ -362,7 +412,7 @@ async def get_description_for_order(message: Message, state: FSMContext):
     """
     Reaction on description
     """
-    chat_id = message.chat.id
+    chat_id, full_name, _, _, _ = default_message(message)
     description = message.text
     
     await bot.send_message(
@@ -380,8 +430,26 @@ async def get_description_for_order(message: Message, state: FSMContext):
         status='Ожидание принятия заказа',
         completed=False
     )
-    
+    await send_message_to_manager(
+        chat_id=chat_id, 
+        full_name=full_name, 
+        furniture=furniture, 
+        description=furniture
+    )
     await state.finish()
     await main_menu(message)
 
-executor.start_polling(dp)
+async def send_message_to_manager(chat_id, full_name, furniture, description):
+    """
+    Send message to manager group
+    """
+    phone = get_phone(chat_id)
+    await get_text_to_manager(
+        phone=phone,
+        full_name=full_name, 
+        furniture=furniture, 
+        description=furniture
+    )
+
+if __name__ == '__main__':
+    executor.start_polling(dp)

@@ -11,3 +11,5 @@ ADMIN = os.getenv('BOT_ADMIN')
 URL = os.getenv('API_URL')
 # BOT PK
 BOT_PK = os.getenv('BOT_PK')
+# MANAGER GROUP
+MANAGER = os.getenv('MANAGER')

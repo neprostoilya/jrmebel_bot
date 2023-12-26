@@ -93,7 +93,7 @@ def get_user(chat_id: str):
     for _ in data:
         if _['telegram_pk'] == str(chat_id):
             return _['pk']
-        
+
 def get_gallery(furniture_pk: int):
     """
     Get Gallery by furniture pk
@@ -103,3 +103,18 @@ def get_gallery(furniture_pk: int):
     for _ in data:
         images_path.append(_['image'])
     return images_path
+
+def get_phone(chat_id: str):
+    """
+    Get phone
+    """
+    data = get('users/users')
+    for _ in data:
+        if _['telegram_pk'] == str(chat_id):
+            return _['phone']
+
+def get_furniture(furniture: int):
+    """
+    Get furniture by pk
+    """
+    

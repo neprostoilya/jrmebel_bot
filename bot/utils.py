@@ -25,3 +25,8 @@ def get_furnitures(category_id: int, style_id: int, pk: int):
     else:
         raise ValueError
     
+def get_text_to_manager(phone, full_name, furniture, description):
+    """
+    Get text to manager
+    """
+    furniture = 
