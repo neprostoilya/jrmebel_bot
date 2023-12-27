@@ -1,8 +1,8 @@
 import requests
 from utils import get_furnitures, get_text_to_manager
-from config import TOKEN
+from config import MANAGER, TOKEN
 from db import check_user, create_order, get_phone, get_user, login_user, register_user
-from keyboards import confirmation_keyboard, phone_button_keyboard, main_menu_keyboard, \
+from keyboards import confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
     catalog_furnitures_keyboard
@@ -232,7 +232,7 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
         message_id=message_id
     )
 
-    num = data.get('count')
+    # num = data.get('count')
     count = 0
     media = MediaGroup()
 
@@ -244,17 +244,17 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
         count += 1
 
     await state.update_data(count=count) 
+    
+    # for _ in range(num):
+    #     await bot.delete_message(
+    #         chat_id=chat_id,
+    #         message_id=message_id - (_+count)
+    #     )
 
     await bot.send_media_group(
         chat_id=chat_id,
         media=media
     )
-
-    for _ in range(num):
-        await bot.delete_message(
-            chat_id=chat_id,
-            message_id=message_id - (_+count)
-        )
 
     await bot.send_message(
         chat_id=chat_id,
@@ -285,7 +285,7 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
         message_id=message_id
     )
 
-    num = data.get('count')
+    # num = data.get('count')
     count = 0
     media = MediaGroup()
 
@@ -297,17 +297,17 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
         count += 1
 
     await state.update_data(count=count) 
+    
+    # for _ in range(num):
+    #     await bot.delete_message(
+    #         chat_id=chat_id,
+    #         message_id=message_id - (_+count-1)
+    #     )
 
     await bot.send_media_group(
         chat_id=chat_id,
         media=media
     )
-
-    for _ in range(num):
-        await bot.delete_message(
-            chat_id=chat_id,
-            message_id=message_id - (_+count-1)
-        )
 
     await bot.send_message(
         chat_id=chat_id,
@@ -397,6 +397,10 @@ async def get_furniture_for_order(call: CallbackQuery, state: FSMContext):
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
     await bot.send_message(
         chat_id=chat_id,
         text='Для заказа отправьте описание заказа.',
@@ -414,42 +418,54 @@ async def get_description_for_order(message: Message, state: FSMContext):
     """
     chat_id, full_name, _, _, _ = default_message(message)
     description = message.text
-    
+    status = 'Ожидание принятия заказа'
+
     await bot.send_message(
         chat_id=chat_id,
         text='Заказ создан, подождите некторое время пока мененджеры примут ваш заказ.'
     )
     async with state.proxy() as data:
         data['description'] = description
-        furniture = int(data['furniture'])
-
+        furniture_pk = int(data['furniture'])
+    
     create_order(
         user=get_user(chat_id),
-        furniture=furniture,
+        furniture=furniture_pk,
         description=description,
-        status='Ожидание принятия заказа',
+        status=status,
         completed=False
     )
-    await send_message_to_manager(
+    text = send_message_to_manager(
         chat_id=chat_id, 
         full_name=full_name, 
-        furniture=furniture, 
-        description=furniture
+        furniture_pk=furniture_pk, 
+        description=description, 
+        status=status
     )
+
+    await bot.send_message(
+        chat_id=MANAGER,
+        text=text,
+        reply_markup=confirmation_order_keyboard()
+    )
+
     await state.finish()
     await main_menu(message)
 
-async def send_message_to_manager(chat_id, full_name, furniture, description):
+def send_message_to_manager(chat_id, full_name, furniture_pk, description, status):
     """
     Send message to manager group
     """
     phone = get_phone(chat_id)
-    await get_text_to_manager(
+    text = get_text_to_manager(
         phone=phone,
         full_name=full_name, 
-        furniture=furniture, 
-        description=furniture
+        furniture_pk=furniture_pk, 
+        description=description,
+        status=status,
     )
+
+    return text
 
 if __name__ == '__main__':
     executor.start_polling(dp)

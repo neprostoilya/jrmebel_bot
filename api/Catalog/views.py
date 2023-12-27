@@ -82,3 +82,16 @@ class GalleryAPIView(APIView):
         serializer = GallerySerializer(furnitures, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
+class GetFurnitureAPIView(APIView):
+    """
+    Get Furniture by pk
+    """
+    def get(self, request, pk):
+        """
+        Get Furnitures
+        """
+        furniture = Furnitures.objects.filter(
+            pk=pk
+        )
+        serializer = FurnituresSerializer(furniture, many=True)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)

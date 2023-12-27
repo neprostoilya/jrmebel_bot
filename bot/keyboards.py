@@ -108,8 +108,20 @@ def confirmation_keyboard(furniture: int):
     """
     markup = InlineKeyboardMarkup(row_width=2)
     buttons = [
-        InlineKeyboardButton(text='❎', callback_data=f'confirmation_rejected_'),
+        InlineKeyboardButton(text='❎', callback_data='confirmation_rejected_'),
         InlineKeyboardButton(text='✅', callback_data=f'confirmation_confirmed_{furniture}'),
+    ]
+    markup.add(*buttons)
+    return markup
+
+def confirmation_order_keyboard():
+    """
+    Buttons for group
+    """
+    markup = InlineKeyboardMarkup(row_width=2)
+    buttons = [
+        InlineKeyboardButton(text='❎', callback_data='confirmation_rejected_order_'),
+        InlineKeyboardButton(text='✅', callback_data='confirmation_confirmed_order_'),
     ]
     markup.add(*buttons)
     return markup

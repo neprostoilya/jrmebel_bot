@@ -1,4 +1,5 @@
-from db import get_furnitures_by_category_and_style, get_gallery
+from db import get_furnitures_by_category_and_style, get_gallery, \
+    get_furniture
 
 def get_furnitures(category_id: int, style_id: int, pk: int):
     furnitures = get_furnitures_by_category_and_style(
@@ -25,8 +26,32 @@ def get_furnitures(category_id: int, style_id: int, pk: int):
     else:
         raise ValueError
     
-def get_text_to_manager(phone, full_name, furniture, description):
+def get_text_to_manager(phone, full_name, furniture_pk, description, status):
     """
     Get text to manager
     """
-    furniture = 
+    furniture = get_furniture(
+        furniture_pk=furniture_pk
+    )
+    title = furniture[0]['title']
+    description_furniture = furniture[0]['description']
+    category = furniture[0]['get_category_title']
+    style = furniture[0]['get_style_title']
+
+    text = f'''
+Название мебели: *{title}*
+
+Описание мебели: {description_furniture}
+
+Категория мебели: *{category}*
+Стиль мебели: *{style}*
+
+Пользователь: @{full_name}
+
+Описание заказа: {description}
+
+Номер: *{phone}*
+
+Статус заказа: *{status}*
+    '''
+    return text
