@@ -9,8 +9,10 @@ def get(point: str):
     """
     url = URL + point
     response = requests.get(url)
-    data = response.json()
-    return data
+    response.raise_for_status()  
+    if response.status_code != 204:
+        data = response.json()
+        return data
 
 def post(point: str, data: json):
     """
@@ -19,6 +21,18 @@ def post(point: str, data: json):
     url = URL + point
     try:
         response = requests.post(url, json=data)
+        data = response.json()
+        return data
+    except:
+        return None
+
+def put(point: str, data: json):
+    """
+    PUT
+    """
+    url = URL + point
+    try:
+        response = requests.put(url, json=data)
         data = response.json()
         return data
     except:
@@ -84,6 +98,20 @@ def create_order(user, furniture, description, status, completed):
         'description': f'{description}','completed': f'{completed}'}
         
     return post('order/create_order/', data)
+
+def get_order(user, furniture_pk, description, status, completed):
+    """
+    Get Order
+    """
+    return get(f'order/get_order/{user}/{furniture_pk}/{description}/{status}/{completed}/')
+
+def put_order(user, furniture, description, status, completed):
+    """
+    Put Order
+    """
+    data = {'user': f'{user}', 'furniture': f'{furniture}', 'status': f'{status}',
+        'description': f'{description}','completed': f'{completed}'}
+    return put(f'order/put_order/{user}/', data)
 
 def get_user(chat_id: str):
     """

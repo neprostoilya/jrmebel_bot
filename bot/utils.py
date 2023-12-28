@@ -1,5 +1,5 @@
 from db import get_furnitures_by_category_and_style, get_gallery, \
-    get_furniture
+    get_furniture, put_order, get_order, get_user
 
 def get_furnitures(category_id: int, style_id: int, pk: int):
     furnitures = get_furnitures_by_category_and_style(
@@ -26,7 +26,7 @@ def get_furnitures(category_id: int, style_id: int, pk: int):
     else:
         raise ValueError
     
-def get_text_to_manager(phone, full_name, furniture_pk, description, status):
+def get_text_to_manager(phone, username, furniture_pk, description, status):
     """
     Get text to manager
     """
@@ -46,7 +46,7 @@ def get_text_to_manager(phone, full_name, furniture_pk, description, status):
 Категория мебели: *{category}*
 Стиль мебели: *{style}*
 
-Пользователь: @{full_name}
+Пользователь: @{username[0]}
 
 Описание заказа: {description}
 
@@ -55,3 +55,9 @@ def get_text_to_manager(phone, full_name, furniture_pk, description, status):
 Статус заказа: *{status}*
     '''
     return text
+
+# def put_order_user(chat_id, order):
+#     """
+#     Put order
+#     """
+    

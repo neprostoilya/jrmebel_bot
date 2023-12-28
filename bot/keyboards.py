@@ -121,7 +121,7 @@ def confirmation_order_keyboard():
     markup = InlineKeyboardMarkup(row_width=2)
     buttons = [
         InlineKeyboardButton(text='❎', callback_data='confirmation_rejected_order_'),
-        InlineKeyboardButton(text='✅', callback_data='confirmation_confirmed_order_'),
+        InlineKeyboardButton(text='✅', callback_data=f'confirmation_confirmed_order_'),
     ]
     markup.add(*buttons)
     return markup
