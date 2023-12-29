@@ -56,6 +56,28 @@ def get_text_to_manager(phone, username, furniture_pk, description, status):
     '''
     return text
 
+def get_text_order(order):
+    """
+    Text for order
+    """
+    text = f'''
+    Название мебели: *{order['get_title_furniture']}*
+
+    Описание мебели: 
+    {order['get_description_furniture']}
+
+    Категория: *{order['get_category_furniture']}*
+
+    Стиль: *{order['get_style_furniture']}*
+
+    Описание заказа: {order['description']}
+
+    Статус: *{order['status']}*
+
+    Выполнен: *{'Да' if order['completed'] else 'Нет'}*
+    '''
+    return text
+
 # def put_order_user(chat_id, order):
 #     """
 #     Put order

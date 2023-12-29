@@ -141,6 +141,12 @@ def get_phone(chat_id: str):
         if _['telegram_pk'] == str(chat_id):
             return _['phone']
 
+def get_orders_by_user(user):
+    """
+    Get Orders by User
+    """
+    return get(f'order/get_orders/{user}/')
+
 def get_furniture(furniture_pk: int):
     """
     Get furniture by pk

@@ -5,6 +5,25 @@ from rest_framework import status as status_or_eror
 from Order.models import Orders
 from Order.serializers import OrdersSerializer
 
+class OrdersAPIView(APIView):
+    """
+    View Get Orders User
+    """
+
+    def get(self, request, user):
+        """
+        Get Categories
+        """
+        orders = Orders.objects.filter(
+            user=user, 
+        )
+        if orders.exists():
+            serializer = OrdersSerializer(orders, many=True)
+            serialized_data = serializer.data
+            return Response(data=serialized_data, status=status_or_eror.HTTP_200_OK)
+        else:
+            return Response(data=serializer.errors, status=status_or_eror.HTTP_404_NOT_FOUND)
+
 class GetOrderAPIView(APIView):
     """
     View Get Order
@@ -26,7 +45,7 @@ class GetOrderAPIView(APIView):
             serialized_data = serializer.data
             return Response(data=serialized_data, status=status_or_eror.HTTP_200_OK)
         else:
-            return Response(data="No data found", status=status_or_eror.HTTP_404_NOT_FOUND)
+            return Response(data=serializer.errors, status=status_or_eror.HTTP_404_NOT_FOUND)
         
 class CreateOrderAPIView(APIView):
     """

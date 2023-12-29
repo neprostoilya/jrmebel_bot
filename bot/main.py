@@ -1,6 +1,6 @@
-from utils import get_furnitures, get_text_to_manager
+from utils import get_furnitures, get_text_order, get_text_to_manager
 from config import MANAGER, TOKEN
-from db import check_user, create_order, get_order, get_phone, get_user, login_user, register_user
+from db import check_user, create_order, get_order, get_phone, get_user, login_user, register_user, get_orders_by_user
 from keyboards import confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
@@ -16,6 +16,10 @@ storage = MemoryStorage()
 
 class Create_order(StatesGroup):
     furniture = State()
+    description = State()
+
+class Confirmation_order(StatesGroup):
+    order = State()
     description = State()
 
 bot = Bot(TOKEN, parse_mode='HTML')
@@ -120,7 +124,7 @@ async def catalog_categories_list(message: Message):
     """
     Reaction on button
     """
-    chat_id = message.chat.id
+    chat_id, _, _, _, _ = default_message(message)
     await bot.send_message(
         chat_id, 
         text='Погнали', 
@@ -442,12 +446,11 @@ async def get_description_for_order(message: Message, state: FSMContext):
         status=status, 
         completed=completed
     )
-    print(order)
 
     await bot.send_message(
         chat_id=MANAGER,
         text=text,
-        reply_markup=confirmation_order_keyboard(),
+        reply_markup=confirmation_order_keyboard(order['pk']),
         parse_mode='Markdown'
     )
 
@@ -469,14 +472,35 @@ def send_message_to_manager(chat_id, username, furniture_pk, description, status
 
     return text
 
-@dp.callback_query_handler(lambda call: 'confirmation_order_keyboard' in call.data, state=Create_order.furniture)
+@dp.callback_query_handler(lambda call: 'confirmation_order_keyboard' in call.data, state=Confirmation_order.order)
 async def confirmed_order(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
     order = int(call.data.split('_')[-1])
+    
+@dp.message_handler(lambda message: '🛍️ Заказы' in message.text)
+async def user_orders(message: Message):
+    """
+    Reaction on button
+    """
+    chat_id, _, _, _, _ = default_message(message)
 
+    await bot.send_message(
+        chat_id=chat_id,
+        text='Ваши заказы.', 
+        reply_markup=back_to_main_menu_keyboard()
+    )
 
+    orders = get_orders_by_user(
+        user=get_user(chat_id)
+    )
+    for order in orders:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=get_text_order(order)
+        )
+    
 if __name__ == '__main__':
     executor.start_polling(dp)
