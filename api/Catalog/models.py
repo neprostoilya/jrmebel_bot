@@ -76,6 +76,9 @@ class Furnitures(models.Model):
         verbose_name='Стиль',
         related_name='style'
     )
+    price = models.FloatField(
+        verbose_name='Цена'
+    )
 
     def __str__(self):
         return self.title

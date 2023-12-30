@@ -31,7 +31,7 @@ class FurnituresAdmin(admin.ModelAdmin):
     """
     Furniture 
     """
-    list_display = ('pk', 'title','descriptiontrim', 'category', 'style', 'img_preview')
+    list_display = ('pk', 'title','descriptiontrim', 'category', 'style', 'price','img_preview')
     list_display_links = ('pk', 'title',)
-    list_editable = ('category', 'style',)
+    list_editable = ('category', 'style', 'price')
     inlines = (GalleryInline,)

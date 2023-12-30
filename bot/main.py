@@ -59,7 +59,7 @@ async def commands(message: Message):
                 f'Добро пожаловать <b>{message.from_user.first_name}</b>.'
             )    
             await message.answer(
-                'Вас приветсвует Бот заказа Мебели.'
+                'Вас приветсвует компания JR мебель.'
             )
             await register_and_login(message)
           
@@ -84,7 +84,7 @@ async def register_and_login(message: Message):
         await main_menu(message)
     else:
         await message.answer(
-            text='Для регистрации вы должны отправить нам контакт.',
+            text='Для регистрации пожалуйста оставьте контакт.',
             reply_markup=phone_button_keyboard()
         )
 
@@ -446,11 +446,10 @@ async def get_description_for_order(message: Message, state: FSMContext):
         status=status, 
         completed=completed
     )
-
     await bot.send_message(
         chat_id=MANAGER,
         text=text,
-        reply_markup=confirmation_order_keyboard(order['pk']),
+        reply_markup=confirmation_order_keyboard(order[0]['pk']),
         parse_mode='Markdown'
     )
 
@@ -489,17 +488,18 @@ async def user_orders(message: Message):
 
     await bot.send_message(
         chat_id=chat_id,
-        text='Ваши заказы.', 
+        text='Ваши послежние 5 заказов.', 
         reply_markup=back_to_main_menu_keyboard()
     )
 
     orders = get_orders_by_user(
         user=get_user(chat_id)
-    )
-    for order in orders:
+    )[::-1]
+    for order in orders[:5]:
         await bot.send_message(
             chat_id=chat_id,
-            text=get_text_order(order)
+            text=get_text_order(order),
+            parse_mode='Markdown'
         )
     
 if __name__ == '__main__':

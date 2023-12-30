@@ -46,10 +46,10 @@ class Orders(models.Model):
         return self.furniture.description
 
     def get_category_furniture(self):
-        return self.furniture.category
+        return self.furniture.category.title
     
     def get_style_furniture(self):
-        return self.furniture.category
+        return self.furniture.category.title
     
     def __str__(self):
         return self.user.username
@@ -57,7 +57,6 @@ class Orders(models.Model):
     def __repr__(self):
         return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, description={self.description}'
            
-
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
