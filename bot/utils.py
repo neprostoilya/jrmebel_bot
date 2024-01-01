@@ -10,13 +10,16 @@ def get_furnitures(category_id: int, style_id: int, pk: int):
     if pk <= quantity_furnitures - 1 and pk >= 0:
         furniture = furnitures[pk]
         text = f'''
-Название: {furniture['title']}
+Название: *{furniture['title']}*
 
 Описание:
-{furniture['description']}                                                                                 
+__{furniture['description']}__                                                                            
 
-Категория: {furniture['get_category_title']} 
-Стиль: {furniture['get_style_title']} 
+Категория: *{furniture['get_category_title']}*
+
+Стиль: *{furniture['get_style_title']}*
+
+Цена: *{furniture['price']}* сумм
     '''
         get_pk = furniture['pk']
         images_path = []
@@ -73,8 +76,6 @@ def get_text_order(order):
 Категория: *{order['get_category_furniture']}*
 
 Стиль: *{order['get_style_furniture']}*
-
-Цена: *{order['price']} сумм*
 
 Описание заказа: {order['description']}
 

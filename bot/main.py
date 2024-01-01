@@ -1,7 +1,7 @@
 from utils import get_furnitures, get_text_order, get_text_to_manager
 from config import MANAGER, TOKEN
 from db import check_user, create_order, get_order, get_phone, get_user, login_user, register_user, get_orders_by_user
-from keyboards import confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
+from keyboards import choose_language_keyboard, confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
     catalog_furnitures_keyboard
@@ -55,22 +55,38 @@ async def commands(message: Message):
     text = message.text
     match text:
         case '/start':
-            await message.answer(
-                f'Добро пожаловать <b>{message.from_user.first_name}</b>.'
-            )    
-            await message.answer(
-                'Вас приветсвует компания JR мебель.'
-            )
-            await register_and_login(message)
+            await choose_language(message)
+            # await message.answer(
+            #     f'Добро пожаловать *{message.from_user.first_name}*.',
+            #     parse_mode='Markdown'
+
+            # )    
+            # await message.answer(
+            #     'Вас приветсвует компания *JR мебель.*',
+            #     parse_mode='Markdown'
+            # )
+            # await register_and_login(message)
           
         case '/about':
             await message.answer(
-                'Этот Бот Создан для заказа мебели...'
+                'Этот Бот Создан для заказа мебели...',
+                parse_mode='Markdown'
             )
         case '/help':
             await message.answer(
-                'У вас вопросы пишите к <Manager>...'
+                'У вас вопросы пишите к <Manager>...',
+                parse_mode='Markdown'
             )
+
+async def choose_language(message: Message):
+    """
+    Choose language bot
+    """     
+    await message.answer(
+        text='Выберите ваш язык.',
+        parse_mode='Markdown',
+        reply_markup=choose_language_keyboard()
+    )
 
 async def register_and_login(message: Message):
     """
@@ -209,7 +225,8 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk),
+        parse_mode='Markdown'
     )
 
 @dp.callback_query_handler(lambda call: 'action_+' in call.data)
@@ -257,7 +274,8 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk),
+        parse_mode='Markdown'
     )
 
 @dp.callback_query_handler(lambda call: 'action_-' in call.data)
@@ -305,7 +323,8 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk)
+        reply_markup=catalog_furnitures_keyboard(pk, quantity_furnitures, get_pk),
+        parse_mode='Markdown'
     )
 
 @dp.callback_query_handler(lambda call: 'back_to_categories' in call.data)
@@ -452,7 +471,9 @@ async def get_description_for_order(message: Message, state: FSMContext):
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
         parse_mode='Markdown'
     )
-
+    await state.update_data(
+        message_id_in_group=message.message_id
+    )
     await state.finish()
     await main_menu(message)
 
@@ -468,17 +489,36 @@ def send_message_to_manager(chat_id, username, furniture_pk, description, status
         description=description,
         status=status,
     )
-
     return text
+    
 
-@dp.callback_query_handler(lambda call: 'confirmation_order_keyboard' in call.data, state=Confirmation_order.order)
+@dp.callback_query_handler(lambda call: 'confirmation_confirmed_order_' in call.data)
 async def confirmed_order(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
     order = int(call.data.split('_')[-1])
+
+    await state.update_data(
+        confirmed_order_pk=order
+    )
+
+    await bot.send_message(
+        chat_id=MANAGER,
+        text='Отправьте сообщение пользователю.'
+    )
+   
+
+@dp.message_handler(content_types=['text'], state=Confirmation_order.order)
+async def send_message_to_user(message: Message, state: FSMContext):
+    """
+    Reaction on description
+    """
+    chat_id, _, _, _, _ = default_message(message)
+
     
+
 @dp.message_handler(lambda message: '🛍️ Заказы' in message.text)
 async def user_orders(message: Message):
     """
@@ -488,7 +528,7 @@ async def user_orders(message: Message):
 
     await bot.send_message(
         chat_id=chat_id,
-        text='Ваши послежние 5 заказов.', 
+        text='Ваши последние заказы.', 
         reply_markup=back_to_main_menu_keyboard()
     )
 
