@@ -1,5 +1,6 @@
 from utils import get_furnitures, get_text_order, get_text_to_manager
 from config import MANAGER, TOKEN
+from template import translations
 from db import check_user, create_order, get_order, get_phone, get_user, login_user, register_user, get_orders_by_user
 from keyboards import choose_language_keyboard, confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
@@ -47,6 +48,13 @@ def default_call(call: CallbackQuery):
     message_id = call.message.message_id
     return chat_id, full_name, first_name, username, message_id
 
+def get_translate_text(data, value):
+    """
+    Get translate text 
+    """
+    language = data.get('language')
+    return translations[language][value]
+
 @dp.message_handler(commands=['start', 'help', 'about']) 
 async def commands(message: Message):
     """
@@ -56,17 +64,6 @@ async def commands(message: Message):
     match text:
         case '/start':
             await choose_language(message)
-            # await message.answer(
-            #     f'Добро пожаловать *{message.from_user.first_name}*.',
-            #     parse_mode='Markdown'
-
-            # )    
-            # await message.answer(
-            #     'Вас приветсвует компания *JR мебель.*',
-            #     parse_mode='Markdown'
-            # )
-            # await register_and_login(message)
-          
         case '/about':
             await message.answer(
                 'Этот Бот Создан для заказа мебели...',
@@ -88,50 +85,88 @@ async def choose_language(message: Message):
         reply_markup=choose_language_keyboard()
     )
 
-async def register_and_login(message: Message):
+@dp.message_handler(lambda message: 'Русский'  in message.text or "O'zbekcha" in message.text)
+async def set_language(message: Message, state: FSMContext):
+    """
+    Set language
+    """
+    chat_id, _, _, _, message_id = default_message(message)
+    languages = {'🇷🇺 Русский': 'ru', "🇺🇿 O'zbekcha": 'uz'}
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id-1
+    )
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+    await state.update_data(
+        language=languages[message.text]
+    )
+    await register_and_login(message, state)
+
+async def register_and_login(message: CallbackQuery, state: FSMContext):
     """
     Login and Registration
     """
     chat_id, _, _, _, _ = default_message(message)
+    data = await state.get_data()
     user = check_user(chat_id=chat_id)
+
     if user:
         login_user(chat_id)
-        await message.answer('Авторизация прошла успешно!')
-        await main_menu(message)
+        await message.answer(
+            text=get_translate_text(data, 'succes_auth'),
+        )
+        await main_menu(message, state)
     else:
         await message.answer(
-            text='Для регистрации пожалуйста оставьте контакт.',
+            text=get_translate_text(data, 'registration_text'),
             reply_markup=phone_button_keyboard()
         )
 
 @dp.message_handler(content_types=['contact']) 
-async def finish_register(message: Message):
+async def finish_register(message: Message, state: FSMContext):
     """
     Registration User
     """
-    chat_id, _, _, username, _ = default_message(message)
+    chat_id, _, _, username, message_id = default_message(message)
+    data = await state.get_data()
     phone = message.contact.phone_number
     register_user(username, phone, chat_id)
-    await message.answer('Регистрация прошла успешно!')
-    await main_menu(message)
 
-async def main_menu(message: Message):
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id-1
+    )
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    await message.answer(
+        text=get_translate_text(data, 'finished_register')
+    )
+    await main_menu(message, state)
+
+async def main_menu(message: Message, state: FSMContext):
     """
     Main Menu
     """
+    data = await state.get_data()
     await message.answer(
-        text='Выберите направление:',
+        text=get_translate_text(data, 'main_menu'),
         reply_markup=main_menu_keyboard()
     )
 
-async def main_menu_call(call: CallbackQuery):
+async def main_menu_call(call: CallbackQuery, state: FSMContext):
     """
     Main Menu
     """
-    chat_id, _, _, _, _ = default_call(call)
-    await bot.send_message(
-        chat_id=chat_id,
-        text='Выберите направление:',
+    data = await state.get_data()
+    await call.answer(
+        text=get_translate_text(data, 'main_menu'),
         reply_markup=main_menu_keyboard()
     )
 
@@ -356,7 +391,7 @@ async def back_to_subcategories(call: CallbackQuery, state: FSMContext):
     )
 
 @dp.message_handler(lambda message: 'Главное меню' in message.text)
-async def back_to_main(message: Message):
+async def back_to_main(message: Message, state: FSMContext):
     """
     Reaction on back button 
     """
@@ -365,7 +400,7 @@ async def back_to_main(message: Message):
         chat_id=chat_id,
         message_id=message_id - 1
     )
-    await main_menu(message)
+    await main_menu(message, state)
     
 @dp.callback_query_handler(lambda call: 'create_order_' in call.data)
 async def confirmation(call: CallbackQuery, state: FSMContext):
@@ -475,7 +510,7 @@ async def get_description_for_order(message: Message, state: FSMContext):
         message_id_in_group=message.message_id
     )
     await state.finish()
-    await main_menu(message)
+    await main_menu(message, state)
 
 def send_message_to_manager(chat_id, username, furniture_pk, description, status):
     """
@@ -491,7 +526,6 @@ def send_message_to_manager(chat_id, username, furniture_pk, description, status
     )
     return text
     
-
 @dp.callback_query_handler(lambda call: 'confirmation_confirmed_order_' in call.data)
 async def confirmed_order(call: CallbackQuery, state: FSMContext):
     """
@@ -509,7 +543,6 @@ async def confirmed_order(call: CallbackQuery, state: FSMContext):
         text='Отправьте сообщение пользователю.'
     )
    
-
 @dp.message_handler(content_types=['text'], state=Confirmation_order.order)
 async def send_message_to_user(message: Message, state: FSMContext):
     """
@@ -517,10 +550,8 @@ async def send_message_to_user(message: Message, state: FSMContext):
     """
     chat_id, _, _, _, _ = default_message(message)
 
-    
-
 @dp.message_handler(lambda message: '🛍️ Заказы' in message.text)
-async def user_orders(message: Message):
+async def user_orders(message: Message, state: FSMContext):
     """
     Reaction on button
     """
@@ -543,4 +574,4 @@ async def user_orders(message: Message):
         )
     
 if __name__ == '__main__':
-    executor.start_polling(dp)
+    executor.start_polling(dp, skip_updates=True)

@@ -130,10 +130,9 @@ def choose_language_keyboard():
     """
     Choose language keyboard
     """
-    markup = InlineKeyboardMarkup(row_width=2)
-    buttons = [
-        InlineKeyboardButton(text='🇷🇺 Русский', callback_data='language_ru'),
-        InlineKeyboardButton(text="🇺🇿 O'zbekcha", callback_data=f'language_uz'),
-    ]
-    markup.add(*buttons)
-    return markup
+    return ReplyKeyboardMarkup(
+        [
+            [KeyboardButton(text='🇷🇺 Русский'),
+            KeyboardButton(text="🇺🇿 O'zbekcha")]
+        ], resize_keyboard=True
+    )
