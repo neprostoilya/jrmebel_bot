@@ -4,34 +4,34 @@ from db import get_categories, get_subcategories_by_category, \
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardButton, InlineKeyboardMarkup
 
-def phone_button_keyboard() -> dict:
+def phone_button_keyboard(btn) -> dict:
     """
     Phone button keyboard
     """
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton(text="📞 Отправить контакт", request_contact=True)]
+            [KeyboardButton(text=f"📞{btn}", request_contact=True)]
         ], resize_keyboard=True
     )
 
-def main_menu_keyboard() -> dict:
+def main_menu_keyboard(catalog, orders, settings) -> dict:
     """
     Main menu with buttons
     """
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton(text='🧾 Каталог'),
-             KeyboardButton(text='🛍️ Заказы'), 
-             KeyboardButton(text='⚙️ Настройки')]
+            [KeyboardButton(text=f"🧾 {catalog}"),
+             KeyboardButton(text=f"🛍️ {orders}"), 
+             KeyboardButton(text=f"⚙️ {settings}")]
         ], resize_keyboard=True
     )
 
-def back_to_main_menu_keyboard() -> dict:
+def back_to_main_menu_keyboard(back_btn) -> dict:
     """
     Back to main menu
     """
     return ReplyKeyboardMarkup([
-        [KeyboardButton(text='↩ Главное меню')]
+        [KeyboardButton(text=f'↩ {back_btn}')]
     ], resize_keyboard=True)
 
 def catalog_categories_keyboard() -> dict:
@@ -50,7 +50,7 @@ def catalog_categories_keyboard() -> dict:
     markup.add(*buttons)
     return markup
 
-def catalog_subcategories_keyboard(category_id: int) -> dict:
+def catalog_subcategories_keyboard(back_btn, category_id: int) -> dict:
     """
     Catalog subcategories keyboard
     """
@@ -65,11 +65,11 @@ def catalog_subcategories_keyboard(category_id: int) -> dict:
         buttons.append(bnt)
     markup.add(*buttons)
     markup.row(
-    InlineKeyboardButton(text='⬅ Назад', callback_data='back_to_categories')
+    InlineKeyboardButton(text=f'⬅ {back_btn}', callback_data='back_to_categories')
     )
     return markup
 
-def catalog_styles_keyboard() -> dict:
+def catalog_styles_keyboard(back_btn) -> dict:
     """
     Catalog styles keyboard
     """
@@ -84,11 +84,11 @@ def catalog_styles_keyboard() -> dict:
         buttons.append(bnt)
     markup.add(*buttons)
     markup.row(
-    InlineKeyboardButton(text='⬅ Назад', callback_data='back_to_subcategories')
+    InlineKeyboardButton(text=f'⬅ {back_btn}', callback_data='back_to_subcategories')
     )
     return markup
 
-def catalog_furnitures_keyboard(pk: int, quantity_furnitures: int, get_pk_furniture: int) -> dict:
+def catalog_furnitures_keyboard(create_order, pk: int, quantity_furnitures: int, get_pk_furniture: int) -> dict:
     """
     View and buy furnitures
     """
@@ -97,7 +97,7 @@ def catalog_furnitures_keyboard(pk: int, quantity_furnitures: int, get_pk_furnit
         InlineKeyboardButton(text='⬅', callback_data='action_-'),
         InlineKeyboardButton(text=f'{pk + 1}/{quantity_furnitures}', callback_data=f'furnitures_{pk}'),
         InlineKeyboardButton(text='➡', callback_data='action_+'),
-        InlineKeyboardButton(text='✅ Заказать', callback_data=f'create_order_{get_pk_furniture}'),
+        InlineKeyboardButton(text=f'✅ {create_order}', callback_data=f'create_order_{get_pk_furniture}'),
     ]
     markup.add(*buttons)
     return markup

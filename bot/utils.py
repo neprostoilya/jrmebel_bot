@@ -1,26 +1,16 @@
 from db import get_furnitures_by_category_and_style, get_gallery, \
-    get_furniture, put_order, get_order, get_user
+    get_furniture
+from template import text_for_furniture, text_order
 
-def get_furnitures(category_id: int, style_id: int, pk: int):
+def get_furnitures(language, category_id: int, style_id: int, pk: int):
     furnitures = get_furnitures_by_category_and_style(
         category=category_id,
         style=style_id
     )
     quantity_furnitures = len(furnitures)
-    if pk <= quantity_furnitures - 1 and pk >= 0:
+    if pk <= quantity_furnitures -1 and pk >= 0:
         furniture = furnitures[pk]
-        text = f'''
-Название: *{furniture['title']}*
-
-Описание:
-__{furniture['description']}__                                                                            
-
-Категория: *{furniture['get_category_title']}*
-
-Стиль: *{furniture['get_style_title']}*
-
-Цена: *{furniture['price']}* сумм
-    '''
+        text = text_for_furniture(language, furniture)
         get_pk = furniture['pk']
         images_path = []
         images_path += get_gallery(get_pk)
@@ -63,26 +53,11 @@ def get_text_to_manager(phone, username, furniture_pk, description, status):
     '''
     return text
 
-def get_text_order(order):
+def get_text_order(language, order):
     """
     Text for order
     """
-    text = f'''
-Название мебели: *{order['get_title_furniture']}*
-
-Описание мебели: 
-{order['get_description_furniture']}
-
-Категория: *{order['get_category_furniture']}*
-
-Стиль: *{order['get_style_furniture']}*
-
-Описание заказа: {order['description']}
-
-Статус: *{order['status']}*
-
-Выполнен: *{'Да' if order['completed'] else 'Нет'}*
-'''
+    text = text_order(language, order)
     return text
 
 # def put_order_user(chat_id, order):
