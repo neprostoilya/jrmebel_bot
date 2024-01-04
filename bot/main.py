@@ -197,7 +197,7 @@ async def catalog_categories_list(message: Message, state: FSMContext):
     await bot.send_message(
         chat_id, 
         text=get_translate_text(data, 'choose_category'),
-        reply_markup=catalog_categories_keyboard()
+        reply_markup=catalog_categories_keyboard(data.get('language'))
     )
 
 @dp.callback_query_handler(lambda call: 'categories_' in call.data)
@@ -214,7 +214,7 @@ async def catalog_subcategories_list(call: CallbackQuery, state: FSMContext):
         chat_id=chat_id,
         text=get_translate_text(data, 'choose_subcategory'),
         message_id=message_id,
-        reply_markup=catalog_subcategories_keyboard(get_translate_text(data, 'back'), category_id)
+        reply_markup=catalog_subcategories_keyboard(data.get('language'), get_translate_text(data, 'back'), category_id)
     )
 
 @dp.callback_query_handler(lambda call: 'subcategory_' in call.data)
@@ -231,7 +231,7 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
         chat_id=chat_id,
         text=get_translate_text(data, 'choose_style'),
         message_id=message_id,
-        reply_markup=catalog_styles_keyboard(get_translate_text(data, 'back'))
+        reply_markup=catalog_styles_keyboard(data.get('language'), get_translate_text(data, 'back'))
     )
 
 @dp.callback_query_handler(lambda call: 'style_' in call.data)
@@ -396,7 +396,7 @@ async def back_to_categories(call: CallbackQuery, state: FSMContext):
         text=get_translate_text(data, 'choose_category'),
         chat_id=chat_id, 
         message_id=message_id,
-        reply_markup=catalog_categories_keyboard()
+        reply_markup=catalog_categories_keyboard(data.get('language'))
     )
 
 @dp.callback_query_handler(lambda call: 'back_to_subcategories' in call.data)
@@ -412,7 +412,7 @@ async def back_to_subcategories(call: CallbackQuery, state: FSMContext):
         text=get_translate_text(data, 'choose_subcategory'),
         chat_id=chat_id, 
         message_id=message_id,
-        reply_markup=catalog_subcategories_keyboard(get_translate_text(data, 'back'), category_id)
+        reply_markup=catalog_subcategories_keyboard(data.get('language'), get_translate_text(data, 'back'), category_id)
     )
 
 @dp.message_handler(lambda message: 'Главное меню'  in message.text or 'Asosiy menyu' in message.text)
@@ -505,7 +505,6 @@ async def get_description_for_order(message: Message, state: FSMContext):
     async with state.proxy() as data:
         data['description'] = description
         furniture_pk = int(data['furniture'])
-    
     create_order(
         user=user,
         furniture=furniture_pk,
@@ -602,5 +601,19 @@ async def user_orders(message: Message, state: FSMContext):
             parse_mode='Markdown'
         )
     
+@dp.message_handler(lambda message: 'Настройки'  in message.text or 'Sozlamalar' in message.text)
+async def settings(message: Message, state: FSMContext):
+    """
+    Reaction on button
+    """
+    chat_id, _, _, _, _ = default_message(message)
+    data = await state.get_data() 
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=get_translate_text(data, 'change_language'),
+        reply_markup=choose_language_keyboard()
+    )
+
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

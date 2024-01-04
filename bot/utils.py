@@ -26,10 +26,10 @@ def get_text_to_manager(phone, username, furniture_pk, description, status):
     furniture = get_furniture(
         furniture_pk=furniture_pk
     )
-    title = furniture[0]['title']
-    description_furniture = furniture[0]['description']
-    category = furniture[0]['get_category_title']
-    style = furniture[0]['get_style_title']
+    title = furniture[0]['title_ru']
+    description_furniture = furniture[0]['description_ru']
+    category = furniture[0]['get_category_title_ru']
+    style = furniture[0]['get_style_title_ru']
     price = furniture[0]['price']
 
     text = f'''

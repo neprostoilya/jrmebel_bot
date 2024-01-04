@@ -6,9 +6,13 @@ class Categories(models.Model):
     """
     Categories Furniture
     """
-    title = models.CharField(
+    title_ru = models.CharField(
         max_length=100,
-        verbose_name='Название Категории'
+        verbose_name='Название категории на русском'
+    )
+    title_uz = models.CharField(
+        max_length=100,
+        verbose_name='Название категории на узбекском'
     )
     subcategory = models.ForeignKey(
         'self',
@@ -19,10 +23,10 @@ class Categories(models.Model):
     )
 
     def __str__(self):
-        return self.title
+        return self.title_ru
     
     def __repr__(self):
-        return f'Category: pk={self.pk}, category={self.title}, subcategory={self.subcategory}'
+        return f'Category: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}, subcategory={self.subcategory}'
     
     class Meta:
         verbose_name = 'Категория Мебели'
@@ -32,16 +36,20 @@ class Styles(models.Model):
     """
     Styles Furniture
     """
-    title = models.CharField(
+    title_ru = models.CharField(
         max_length=100,
-        verbose_name='Название Стиля'
+        verbose_name='Название cтиля категории на русском'
+    )
+    title_uz = models.CharField(
+        max_length=100,
+        verbose_name='Название cтиля категории на узбекском'
     )
 
     def __str__(self):
-        return self.title
+        return self.title_ru
     
     def __repr__(self):
-        return f'Style: pk={self.pk}, title={self.title}'
+        return f'Style: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}'
     
     class Meta:
         verbose_name = 'Стиль Категории Мебели'
@@ -51,9 +59,13 @@ class Furnitures(models.Model):
     """
     Furnitures
     """
-    title = models.CharField(
+    title_ru = models.CharField(
         max_length=155,
-        verbose_name='Название Мебели'
+        verbose_name='Название мебели на русском'
+    )
+    title_uz = models.CharField(
+        max_length=155,
+        verbose_name='Название мебели на узбекском'
     )
     image = models.ImageField(
         upload_to='furnitures/', 
@@ -61,8 +73,11 @@ class Furnitures(models.Model):
         blank=True, 
         verbose_name='Фото'
     )
-    description = models.TextField(
-        verbose_name='Описание'
+    description_ru = models.TextField(
+        verbose_name='Описание на русском'
+    )
+    description_uz = models.TextField(
+        verbose_name='Описание на узбекском'
     )
     category = models.ForeignKey(
         Categories, 
@@ -81,15 +96,14 @@ class Furnitures(models.Model):
     )
 
     def __str__(self):
-        return self.title
+        return self.title_ru
     
     def __repr__(self):
-        return f'Furniture: pk={self.pk}, title={self.title}, image={self.image}, \
-        description={self.description}, category={self.category}, style={self.image}'
-            
+        return f'Furniture: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}, image={self.image}, \
+        description_ru={self.description_ru}, description_uz={self.description_uz}, category={self.category}, style={self.image}'
     
     def descriptiontrim(self):
-        return u"%s..." % (self.description[:100],)
+        return u"%s..." % (self.description_ru[:100],)
     
     descriptiontrim.allow_tags = True
     descriptiontrim.short_description = 'Описание'
@@ -100,11 +114,17 @@ class Furnitures(models.Model):
     img_preview.allow_tags = True
     img_preview.short_description = 'Миниатюра'
 
-    def get_category_title(self):
-        return self.category.title
+    def get_category_title_ru(self):
+        return self.category.title_ru
 
-    def get_style_title(self):
-        return self.style.title
+    def get_category_title_uz(self):
+        return self.category.title_uz
+
+    def get_style_title_ru(self):
+        return self.style.title_ru
+
+    def get_style_title_uz(self):
+        return self.style.title_uz
 
     class Meta:
         verbose_name = 'Мебель'

@@ -14,24 +14,24 @@ class CategoriesAdmin(admin.ModelAdmin):
     """
     Categories 
     """
-    list_display = ('pk', 'title', 'subcategory')
+    list_display = ('pk', 'title_ru', 'subcategory')
     list_editable = ('subcategory',)
-    list_display_links = ('pk', 'title',)
+    list_display_links = ('pk', 'title_ru',)
 
 @admin.register(Styles)
 class StylesAdmin(admin.ModelAdmin):
     """
     Styles 
     """
-    list_display = ('pk', 'title',)
-    list_display_links = ('pk', 'title',)
+    list_display = ('pk', 'title_ru',)
+    list_display_links = ('pk', 'title_ru',)
 
 @admin.register(Furnitures)
 class FurnituresAdmin(admin.ModelAdmin):
     """
     Furniture 
     """
-    list_display = ('pk', 'title','descriptiontrim', 'category', 'style', 'price','img_preview')
-    list_display_links = ('pk', 'title',)
+    list_display = ('pk', 'title_ru','descriptiontrim', 'category', 'style', 'price','img_preview')
+    list_display_links = ('pk', 'title_ru',)
     list_editable = ('category', 'style', 'price')
     inlines = (GalleryInline,)

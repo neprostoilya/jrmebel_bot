@@ -34,7 +34,7 @@ def back_to_main_menu_keyboard(back_btn) -> dict:
         [KeyboardButton(text=f'↩ {back_btn}')]
     ], resize_keyboard=True)
 
-def catalog_categories_keyboard() -> dict:
+def catalog_categories_keyboard(language) -> dict:
     """
     Catalog categories keyboard
     """
@@ -43,14 +43,14 @@ def catalog_categories_keyboard() -> dict:
     categories = get_categories()
     for category in categories:
         bnt = InlineKeyboardButton(
-            text=category['title'],
+            text=category[f'title_{language}'],
             callback_data=f"categories_{category['pk']}"
         )
         buttons.append(bnt)
     markup.add(*buttons)
     return markup
 
-def catalog_subcategories_keyboard(back_btn, category_id: int) -> dict:
+def catalog_subcategories_keyboard(language, back_btn, category_id: int) -> dict:
     """
     Catalog subcategories keyboard
     """
@@ -59,7 +59,7 @@ def catalog_subcategories_keyboard(back_btn, category_id: int) -> dict:
     subcategories = get_subcategories_by_category(category_id)
     for subcategory in subcategories:
         bnt = InlineKeyboardButton(
-            text=subcategory['title'],
+            text=subcategory[f'title_{language}'],
             callback_data=f"subcategory_{subcategory['pk']}"
         )
         buttons.append(bnt)
@@ -69,7 +69,7 @@ def catalog_subcategories_keyboard(back_btn, category_id: int) -> dict:
     )
     return markup
 
-def catalog_styles_keyboard(back_btn) -> dict:
+def catalog_styles_keyboard(language, back_btn) -> dict:
     """
     Catalog styles keyboard
     """
@@ -78,7 +78,7 @@ def catalog_styles_keyboard(back_btn) -> dict:
     styles = get_styles()
     for style in styles:
         bnt = InlineKeyboardButton(
-            text=style['title'],
+            text=style[f'title_{language}'],
             callback_data=f"style_{style['pk']}"
         )
         buttons.append(bnt)

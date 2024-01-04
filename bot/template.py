@@ -18,7 +18,8 @@ translations = {
             "success_create_order": "Buyurtma yaratildi, buyurtmani qabul qilish uchun bir oz vaqt kuting.",
             "last_orders": "Sizning oxirgi buyurtmalaringiz.",
             "create_order": "Buyurtma bermoq",
-            "back": "Orqaga"
+            "back": "Orqaga",
+            "change_language": "Tilni tanlang:"
         },
         "ru": {
             "succes_auth": "Авторизация прошла успешно!",
@@ -40,33 +41,34 @@ translations = {
             "last_orders": "Ваши последние заказы.",
             "create_order": "Заказать",
             "back": "Назад",
+            "change_language": "Выберите язык:"
         }
     }
 
 def text_for_furniture(language, furniture):
     if language == 'ru':
         return f'''
-Название: *{furniture['title']}*
+Название: *{furniture['title_ru']}*
 
 Описание:
-__{furniture['description']}__                                                                            
+__{furniture['description_ru']}__                                                                            
 
-Категория: *{furniture['get_category_title']}*
+Категория: *{furniture['get_category_title_ru']}*
 
-Стиль: *{furniture['get_style_title']}*
+Стиль: *{furniture['get_style_title_ru']}*
 
 Цена: *{furniture['price']}* сумм
         '''
     else:
         return f'''
-Nomi: *{furniture['title']}*
+Nomi: *{furniture['title_uz']}*
 
 Tavsif:
-{furniture['description']}
+{furniture['description_uz']}
 
-Kategoriya: *{furniture['get_category_title']}*
+Kategoriya: *{furniture['get_category_title_uz']}*
 
-Stil: *{furniture['get_style_title']}*
+Stil: *{furniture['get_style_title_uz']}*
 
 Narx: *{furniture['price']}* so'm
         '''
@@ -74,14 +76,14 @@ Narx: *{furniture['price']}* so'm
 def text_order(language, order):
     if language == 'ru':
         return f'''
-Название мебели: *{order['get_title_furniture']}*
+Название мебели: *{order['get_title_furniture_ru']}*
 
 Описание мебели: 
-{order['get_description_furniture']}
+{order['get_description_furniture_ru']}
 
-Категория: *{order['get_category_furniture']}*
+Категория: *{order['get_category_furniture_ru']}*
 
-Стиль: *{order['get_style_furniture']}*
+Стиль: *{order['get_style_furniture_ru']}*
 
 Описание заказа: {order['description']}
 
@@ -91,14 +93,14 @@ def text_order(language, order):
         '''
     else: 
         return f'''
-Nomi: *{order['get_title_furniture']}*
+Nomi: *{order['get_title_furniture_uz']}*
 
 Mebel tavsifi:
-{order['get_description_furniture']}
+{order['get_description_furniture_uz']}
 
-Kategoriya: *{order['get_category_furniture']}*
+Kategoriya: *{order['get_category_furniture_uz']}*
 
-Stil: *{order['get_style_furniture']}*
+Stil: *{order['get_style_furniture_uz']}*
 
 Buyurtma tavsifi: {order['description']}
 

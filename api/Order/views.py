@@ -22,7 +22,7 @@ class OrdersAPIView(APIView):
             serialized_data = serializer.data
             return Response(data=serialized_data, status=status_or_eror.HTTP_200_OK)
         else:
-            return Response(data=serializer.errors, status=status_or_eror.HTTP_404_NOT_FOUND)
+            return Response(status=status_or_eror.HTTP_404_NOT_FOUND)
 
 class GetOrderAPIView(APIView):
     """
