@@ -35,7 +35,8 @@ def get_text_to_manager(phone, username, furniture_pk, description, status):
     text = f'''
 Название мебели: *{title}*
 
-Описание мебели: {description_furniture}
+Описание мебели: 
+{description_furniture}
 
 Категория мебели: *{category}*
 

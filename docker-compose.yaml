@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_HOST=database
+    env_file:
+      - .env
+  bot:
+    build: ./bot
+    depends_on:
+      - api
+    environment:
+      - API_HOST=api
+    env_file:
+      - .env
+
+  database:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=18960707
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+    ports:
+      - '5432:5432'
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  database-data:

@@ -105,13 +105,12 @@ def get_order(user, furniture_pk, description, status, completed):
     """
     return get(f'order/get_order/{user}/{furniture_pk}/{description}/{status}/{completed}/')
 
-def put_order(user, furniture, description, status, completed):
+def update_order(pk, user, status, completed):
     """
     Put Order
     """
-    data = {'user': f'{user}', 'furniture': f'{furniture}', 'status': f'{status}',
-        'description': f'{description}','completed': f'{completed}'}
-    return put(f'order/put_order/{user}/', data)
+    data = {'status': f'{status}', 'user': f'{user}', 'completed': f'{completed}'}
+    return put(f'order/update_order/{pk}/', data)
 
 def get_user(chat_id: str):
     """
@@ -147,9 +146,31 @@ def get_orders_by_user(user):
     """
     return get(f'order/get_orders/{user}/')
 
+def get_chat_id_by_order(order):
+    """
+    Get chat_id by order
+    """
+    data = get(f'order/get_order_by_pk/{order}/')
+    return get_chat_id_by_pk(data[0]['user'])
+
+def get_chat_id_by_pk(pk: int):
+    """
+    Get User chat_id
+    """
+    data = get('users/users')
+    for _ in data:
+        if _['pk'] == pk:
+            return _['telegram_pk']
+
 def get_furniture(furniture_pk: int):
     """
     Get furniture by pk
     """
     data = get(f'catalog/get_furniture/{furniture_pk}/')
     return data
+
+def get_order_by_pk(pk):
+    """
+    Get Order by pk
+    """
+    return get(f'order/get_order_by_pk/{pk}/')

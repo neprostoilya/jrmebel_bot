@@ -106,7 +106,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-
+    
     @property
     def token(self):
         return self.generate_jwt_token()

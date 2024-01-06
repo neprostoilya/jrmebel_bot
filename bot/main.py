@@ -1,7 +1,7 @@
 from utils import get_furnitures, get_text_order, get_text_to_manager
 from config import MANAGER, TOKEN
 from template import translations
-from db import check_user, create_order, get_order, get_phone, get_user, login_user, register_user, get_orders_by_user
+from db import check_user, create_order, get_chat_id_by_order, get_order, get_order_by_pk, get_phone, get_user, login_user, update_order, register_user, get_orders_by_user
 from keyboards import choose_language_keyboard, confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
@@ -17,10 +17,6 @@ storage = MemoryStorage()
 
 class Create_order(StatesGroup):
     furniture = State()
-    description = State()
-
-class Confirmation_order(StatesGroup):
-    order = State()
     description = State()
 
 bot = Bot(TOKEN, parse_mode='HTML')
@@ -52,8 +48,11 @@ def get_translate_text(data, value):
     """
     Get translate text 
     """
-    language = data.get('language')
-    return translations[language][value]
+    try:
+        language = data.get('language')
+        return translations[language][value]
+    except KeyError:
+        pass
 
 @dp.message_handler(commands=['start', 'help', 'about']) 
 async def commands(message: Message):
@@ -83,7 +82,7 @@ async def choose_language(message: Message):
         text='Выберите ваш язык.',
         parse_mode='Markdown',
         reply_markup=choose_language_keyboard()
-    )
+    )   
 
 @dp.message_handler(lambda message: 'Русский'  in message.text or "O'zbekcha" in message.text)
 async def set_language(message: Message, state: FSMContext):
@@ -497,6 +496,7 @@ async def get_description_for_order(message: Message, state: FSMContext):
     status = 'Ожидание принятия заказа'
     completed = False
     user = get_user(chat_id)
+    language = data.get('language')
 
     await bot.send_message(
         chat_id=chat_id,
@@ -532,13 +532,15 @@ async def get_description_for_order(message: Message, state: FSMContext):
         chat_id=MANAGER,
         text=text,
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
-        parse_mode='Markdown'
     )
     await state.update_data(
         message_id_in_group=message.message_id
     )
     await main_menu(message, state)
     await state.finish()
+    await state.update_data(
+        language=language
+    )
 
 def send_message_to_manager(chat_id, username, furniture_pk, description, status):
     """
@@ -554,7 +556,7 @@ def send_message_to_manager(chat_id, username, furniture_pk, description, status
     )
     return text
     
-@dp.callback_query_handler(lambda call: 'confirmation_confirmed_order_' in call.data)
+@dp.callback_query_handler(lambda call: 'confirmation_accepted_order_' in call.data)
 async def confirmed_order(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
@@ -562,20 +564,48 @@ async def confirmed_order(call: CallbackQuery, state: FSMContext):
     order = int(call.data.split('_')[-1])
 
     await state.update_data(
-        confirmed_order_pk=order
+        order_pk=order
     )
-
+    await state.update_data(
+        status='принят'
+    )
+    await state.update_data(
+        note='Через некоторое время к вам позвонит или напишет наш представитель.'
+    )
     await bot.send_message(
         chat_id=MANAGER,
         text='Отправьте сообщение пользователю.'
     )
    
-@dp.message_handler(content_types=['text'], state=Confirmation_order.order)
-async def send_message_to_user(message: Message, state: FSMContext):
-    """
-    Reaction on description
-    """
-    chat_id, _, _, _, _ = default_message(message)
+@dp.message_handler(content_types=['text'], chat_id=MANAGER)
+async def send_message_order_accepted_to_user(message: Message, state: FSMContext):
+    data = await state.get_data()
+    order_pk = data.get('order_pk')
+    status = data.get('status')
+    note = data.get('note')
+
+    if order_pk:
+        await bot.send_message(
+            chat_id=MANAGER,
+            text='Сообщение отправлено пользователю.'
+        )
+        chat_id = get_chat_id_by_order(order_pk)
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f'''
+Ваш заказ был {status}!
+        
+Сообщение:
+{message.text}
+
+{note}
+            '''
+        )
+        order = get_order_by_pk(order_pk)[0]
+        update_order(order_pk, order['user'], status.capitalize(), order['completed'])
+        await state.update_data(
+            confirmed_order_pk=None 
+        )
 
 @dp.message_handler(lambda message: 'Заказы'  in message.text or 'Buyurtmalar' in message.text)
 async def user_orders(message: Message, state: FSMContext):
@@ -615,5 +645,29 @@ async def settings(message: Message, state: FSMContext):
         reply_markup=choose_language_keyboard()
     )
 
+@dp.callback_query_handler(lambda call: 'confirmation_rejected_order_' in call.data)
+async def confirmed_rejected_order(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    order = int(call.data.split('_')[-1])
+    await state.update_data(
+        order_pk=order
+    )
+    await state.update_data(
+        order_pk=order
+    )
+    await state.update_data(
+        status='отказан'
+    )
+    await state.update_data(
+        note='Статус вашего заказа изменен на отказ.'
+    )
+
+    await bot.send_message(
+        chat_id=MANAGER,
+        text='Отправьте причину отказа пользователю.'
+    )
+   
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
