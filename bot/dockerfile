@@ -7,7 +7,8 @@ WORKDIR /app
 COPY requirements.txt /app/
 
 RUN pip install -r requirements.txt
+RUN pip install aiogram==2.25.1  
 
 COPY . /app/
 
-CMD python main.py  
+CMD python bot/main.py  

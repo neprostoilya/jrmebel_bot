@@ -6,15 +6,17 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-aska0_q^e-t5^k=9f=ul=^dlllb5qu78(5ludu6qqjy3o%c+^6'
 
-DEBUG = bool(int(os.getenv('DEBUG')))
+DEBUG = True
 
 AUTH_USER_MODEL = 'Users.UserProfile'
 
-BOT_PK = str(os.getenv('BOT_PK'))
+BOT_PK = 6810108018
 
 ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost/']
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -42,6 +44,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+SITE_ID = 1
 
 TEMPLATES = [
     {
@@ -65,11 +68,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('NAME'), 
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'), 
-        'PORT': os.getenv('PORT'),
+        'NAME': 'postgres', 
+        'USER': 'postgres',
+        'PASSWORD': '18960707',
+        'HOST': 'database', 
+        'PORT': '5432',
     }
 }
 
@@ -90,9 +93,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'
+
 STATIC_URL = '/static/'
 
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 

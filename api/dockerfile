@@ -4,12 +4,13 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
 
-WORKDIR /app
+WORKDIR /api
 
-COPY requirements.txt /app/
+COPY requirements.txt /api/
 
 RUN pip install -r requirements.txt
 
-COPY . /app/
+COPY . /api/
 
-CMD python manage.py runserver 0.0.0.0:8000
+CMD python api/manage.py runserver 0.0.0.0:8000
+

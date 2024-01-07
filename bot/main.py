@@ -532,6 +532,7 @@ async def get_description_for_order(message: Message, state: FSMContext):
         chat_id=MANAGER,
         text=text,
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
+        parse_mode='Markdown'
     )
     await state.update_data(
         message_id_in_group=message.message_id
