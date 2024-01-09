@@ -19,7 +19,7 @@ def get_furnitures(language, category_id: int, style_id: int, pk: int):
     else:
         raise ValueError
     
-def get_text_to_manager(phone, username, furniture_pk, description, status):
+def get_text_to_manager(phone, username, furniture_pk, description, status, datetime_order):
     """
     Get text to manager
     """
@@ -51,6 +51,8 @@ def get_text_to_manager(phone, username, furniture_pk, description, status):
 Номер: *{phone}*
 
 Статус заказа: *{status}*
+
+Забронированая дата: *{datetime_order}*
     '''
     return text
 

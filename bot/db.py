@@ -90,20 +90,20 @@ def get_furnitures_by_category_and_style(category, style):
     data = get(f'catalog/get_furnitures/{category}/{style}/')
     return data
 
-def create_order(user, furniture, description, status, completed):
+def create_order(user, furniture, description, status, completed, datetime_booking):
     """
     Create Order
     """
     data = {'user': f'{user}', 'furniture': f'{furniture}', 'status': f'{status}',
-        'description': f'{description}','completed': f'{completed}'}
+        'description': f'{description}','completed': f'{completed}', 'datetime_booking': f'{datetime_booking}'}
         
     return post('order/create_order/', data)
 
-def get_order(user, furniture_pk, description, status, completed):
+def get_order(user, furniture_pk, description, status, completed, datetime_order):
     """
     Get Order
     """
-    return get(f'order/get_order/{user}/{furniture_pk}/{description}/{status}/{completed}/')
+    return get(f'order/get_order/{user}/{furniture_pk}/{description}/{status}/{completed}/{datetime_order}')
 
 def update_order(pk, user, status, completed):
     """

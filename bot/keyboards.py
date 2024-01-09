@@ -1,3 +1,6 @@
+from datetime import datetime
+from datetime import date as date_from_datetime
+from calendar import monthrange
 from db import get_categories, get_subcategories_by_category, \
     get_styles
 
@@ -136,3 +139,76 @@ def choose_language_keyboard():
             KeyboardButton(text="🇺🇿 O'zbekcha")]
         ], resize_keyboard=True
     )
+
+def choose_month_keyboard():
+    """
+    Choose month keyboard
+    """
+    markup = InlineKeyboardMarkup(row_width=3)
+    months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+    buttons = []
+
+    for i, month in enumerate(months, start=4):
+        btn = InlineKeyboardButton(
+            month, 
+            callback_data=f'select_month_{i}'
+        )
+        buttons.append(btn)
+
+    markup.add(*buttons)
+    return markup
+
+def choose_day_keyboard(month):
+    """
+    Choose day keyboard
+    """
+    year = datetime.now().year
+    days_month = monthrange(year, month)[1]
+    markup = InlineKeyboardMarkup(row_width=7)
+    buttons = []
+    num = 0
+    name_days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+    for day in range(days_month):
+        if num <= 6:
+            if name_days[num] == 'Вс':
+                btn = InlineKeyboardButton(
+                    f'{name_days[num]} {day+1}', 
+                    callback_data=f'ignore'
+                )
+            else:
+                btn = InlineKeyboardButton(
+                    f'{name_days[num]} {day+1}', 
+                    callback_data=f'select_day_{name_days[num]}_{day+1}'
+                )
+            buttons.append(btn)
+            num += 1
+        else:
+            num = 0
+            btn = InlineKeyboardButton(
+                f'{name_days[num]} {day+1}', 
+                callback_data=f'select_day_{name_days[num]}_{day+1}'
+            )
+            buttons.append(btn)
+            num += 1
+
+    markup.add(*buttons)
+    return markup
+
+def choose_time_keyboard(times_list):
+    """
+    Choose time keyboard
+    """
+    markup = InlineKeyboardMarkup(row_width=2)
+    buttons = []
+
+    for time in times_list:
+        btn = InlineKeyboardButton(
+            time, 
+            callback_data=f'select_time_{time}'
+        )
+        buttons.append(btn)
+
+    markup.add(*buttons)
+    return markup
+

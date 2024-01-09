@@ -1,8 +1,9 @@
+import datetime
 from utils import get_furnitures, get_text_order, get_text_to_manager
 from config import MANAGER, TOKEN
 from template import translations
 from db import check_user, create_order, get_chat_id_by_order, get_order, get_order_by_pk, get_phone, get_user, login_user, update_order, register_user, get_orders_by_user
-from keyboards import choose_language_keyboard, confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
+from keyboards import choose_day_keyboard, choose_language_keyboard, choose_month_keyboard, choose_time_keyboard, confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
     catalog_categories_keyboard, back_to_main_menu_keyboard, \
     catalog_subcategories_keyboard, catalog_styles_keyboard, \
     catalog_furnitures_keyboard
@@ -18,6 +19,9 @@ storage = MemoryStorage()
 class Create_order(StatesGroup):
     furniture = State()
     description = State()
+    month = State()
+    day = State()
+    time = State()
 
 bot = Bot(TOKEN, parse_mode='HTML')
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -481,7 +485,7 @@ async def get_furniture_for_order(call: CallbackQuery, state: FSMContext):
         reply_markup=ReplyKeyboardRemove()
     )
     async with state.proxy() as data:
-        data['furniture'] = int(call.data.split('_')[-1])
+        data['furniture_pk'] = int(call.data.split('_')[-1])
 
     await Create_order.next()
 
@@ -490,27 +494,87 @@ async def get_description_for_order(message: Message, state: FSMContext):
     """
     Reaction on description
     """
-    chat_id, _, _, username, _ = default_message(message)
+    chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data() 
     description = message.text
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text='Выберите месяц:',
+        reply_markup=choose_month_keyboard()
+    )
+
+    async with state.proxy() as data:
+        data['description'] = description
+
+    await Create_order.next()
+
+@dp.callback_query_handler(lambda call: 'select_month_' in call.data, state=Create_order.month)
+async def get_month_for_order(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, _, message_id = default_call(call)
+    month = int(call.data.split('_')[-1])
+    await bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=message_id,
+        text='Выберите день: Примечание в воскресение мы не работаем.',
+        reply_markup=choose_day_keyboard(month)
+    )
+    async with state.proxy() as data:
+        data['month'] = month
+    await Create_order.next()
+
+@dp.callback_query_handler(lambda call: 'select_day_' in call.data, state=Create_order.day)
+async def get_day_for_order(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, _, message_id = default_call(call)
+    day = int(call.data.split('_')[-1])
+    name_day = call.data.split('_')[-2]
+    if name_day == 'Сб':
+        markup = choose_time_keyboard(
+            ['10:00-12:00', '12:00-14:00', '14:00-16:00', '16:00-18:00']
+        )
+    else:
+        markup = choose_time_keyboard(
+            ['8:00-10:00', '17:00-19:00']
+        ) 
+    await bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=message_id,
+        text='Выберите время:',
+        reply_markup=markup
+    )
+    async with state.proxy() as data:
+        data['day'] = day
+    await Create_order.next()
+
+@dp.callback_query_handler(lambda call: 'select_time_' in call.data, state=Create_order.time)
+async def get_time_for_order(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, username, _ = default_call(call)
+    data = await state.get_data() 
     status = 'Ожидание принятия заказа'
     completed = False
     user = get_user(chat_id)
     language = data.get('language')
+    time = call.data.split('_')[-1]
 
     await bot.send_message(
         chat_id=chat_id,
         text=get_translate_text(data, 'success_create_order')
     )
     async with state.proxy() as data:
-        data['description'] = description
-        furniture_pk = int(data['furniture'])
+        month = int(data['month'])
+        day = int(data['day'])
+        description = data['description']
+        furniture_pk = data(['furniture_pk'])
+
+    datetime_order = f'{datetime.datetime.now().year}-{month}-{day}, {time}'
+
     create_order(
         user=user,
         furniture=furniture_pk,
         description=description,
         status=status,
-        completed=completed
+        completed=completed,
+        datetime_booking=datetime_order
     )
 
     text = send_message_to_manager(
@@ -518,7 +582,8 @@ async def get_description_for_order(message: Message, state: FSMContext):
         username=username, 
         furniture_pk=furniture_pk, 
         description=description, 
-        status=status
+        status=status,
+        datetime_order=datetime_order
     )
 
     order = get_order(
@@ -526,7 +591,8 @@ async def get_description_for_order(message: Message, state: FSMContext):
         furniture_pk=furniture_pk, 
         description=description, 
         status=status, 
-        completed=completed
+        completed=completed,
+        datetime_order=datetime_order
     )
     await bot.send_message(
         chat_id=MANAGER,
@@ -534,16 +600,14 @@ async def get_description_for_order(message: Message, state: FSMContext):
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
         parse_mode='Markdown'
     )
-    await state.update_data(
-        message_id_in_group=message.message_id
-    )
-    await main_menu(message, state)
+    await main_menu_call(call, state)
     await state.finish()
     await state.update_data(
         language=language
     )
 
-def send_message_to_manager(chat_id, username, furniture_pk, description, status):
+
+def send_message_to_manager(chat_id, username, furniture_pk, description, status, datetime_order):
     """
     Send message to manager group
     """
@@ -554,6 +618,7 @@ def send_message_to_manager(chat_id, username, furniture_pk, description, status
         furniture_pk=furniture_pk, 
         description=description,
         status=status,
+        datetime_order=datetime_order
     )
     return text
     

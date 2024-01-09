@@ -8,5 +8,5 @@ class OrdersAdmin(admin.ModelAdmin):
     """
     Orders 
     """
-    list_display = ('pk', 'user', 'furniture', 'descriptiontrim', 'status', 'completed')
+    list_display = ('pk', 'user', 'furniture', 'descriptiontrim', 'status', 'completed', 'datetime_order')
     list_display_links = ('pk', )

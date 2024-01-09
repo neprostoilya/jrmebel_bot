@@ -26,6 +26,9 @@ class Orders(models.Model):
         blank=True,
         null=True
     )
+    datetime_order = models.CharField(
+        verbose_name='Дата и время бронирования',
+    )
     status = models.CharField(
         verbose_name='Статус'
     )
@@ -67,7 +70,7 @@ class Orders(models.Model):
         return self.user.username
     
     def __repr__(self):
-        return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, description={self.description}'
+        return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, description={self.description}, completed={self.completed}, datetime_booking={self.datetime_booking}'
            
     class Meta:
         verbose_name = 'Заказ'

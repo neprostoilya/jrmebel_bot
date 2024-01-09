@@ -90,6 +90,9 @@ def text_order(language, order):
 Статус: *{order['status']}*
 
 Выполнен: *{'Да' if order['completed'] else 'Нет'}*
+
+Забронированая дата: *{order['datetime_order']}*
+
         '''
     else: 
         return f'''

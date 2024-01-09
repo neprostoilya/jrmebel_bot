@@ -30,7 +30,7 @@ class GetOrderAPIView(APIView):
     View Get Order
     """
 
-    def get(self, request, user, furniture_pk, description, status, completed):
+    def get(self, request, user, furniture_pk, description, status, completed, datetime_order):
         """
         Get Order
         """
@@ -39,7 +39,8 @@ class GetOrderAPIView(APIView):
             furniture=furniture_pk, 
             description=description, 
             status=status, 
-            completed=completed
+            completed=completed,
+            datetime_order=datetime_order
         )
         if order.exists():
             serializer = OrdersSerializer(order, many=True)
