@@ -100,7 +100,7 @@ class Furnitures(models.Model):
     
     def __repr__(self):
         return f'Furniture: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}, image={self.image}, \
-        description_ru={self.description_ru}, description_uz={self.description_uz}, category={self.category}, style={self.image}'
+        description_ru={self.description_ru}, description_uz={self.description_uz}, category={self.category}, style={self.style}'
     
     def descriptiontrim(self):
         return u"%s..." % (self.description_ru[:100],)
