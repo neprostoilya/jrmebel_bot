@@ -5,15 +5,13 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
+
 class UserProfileManager(BaseUserManager):
     """
     Defines user creation fields and manages to save user
     """
 
     def create_user(self, username, phone, telegram_pk, password=None):
-        """
-        Create User
-        """
         if not username:
             raise ValueError('The Username must be set')
         if not phone:
@@ -26,38 +24,43 @@ class UserProfileManager(BaseUserManager):
             phone=phone,
             telegram_pk=telegram_pk,
         )
+
         user.save(using=self._db)
+
         return user
 
     def create_staffuser(self, username, phone, telegram_pk, password=None):
-        """
-        Create Staff User
-        """
         user = self.create_user(
             username,
             phone,
             telegram_pk,
             password=password,
         )
+
         user.is_staff = True
+
         user.set_password(password)
+
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, username, phone, telegram_pk, password=None):
-        """
-        Create SUPER MAN User
-        """
         user = self.create_user(
             username,
             phone,
             telegram_pk,
             password=password,
         )
+
         user.set_password(password)
+
         user.is_staff = True
+
         user.is_admin = True
+
         user.save(using=self._db)
+        
         return user
     
 class UserProfile(AbstractBaseUser, PermissionsMixin):

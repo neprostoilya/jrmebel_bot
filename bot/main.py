@@ -1,29 +1,30 @@
-import datetime
-from utils import get_furnitures, get_text_order, get_text_to_manager
-from config import MANAGER, TOKEN
-from template import translations
-from db import check_user, create_order, get_chat_id_by_order, get_order, get_order_by_pk, get_phone, get_user, login_user, update_order, register_user, get_orders_by_user
-from keyboards import choose_day_keyboard, choose_language_keyboard, choose_month_keyboard, choose_time_keyboard, confirmation_keyboard, confirmation_order_keyboard, phone_button_keyboard, main_menu_keyboard, \
-    catalog_categories_keyboard, back_to_main_menu_keyboard, \
-    catalog_subcategories_keyboard, catalog_styles_keyboard, \
-    catalog_furnitures_keyboard
-
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import Bot, Dispatcher, executor
 from aiogram.types import Message, CallbackQuery, MediaGroup, InputFile, ReplyKeyboardRemove
 
+from utils import  get_furnitures, get_text_order, get_text_to_manager, get_text_to_manager_for_call
+from config import MANAGER, TOKEN
+from template import get_days_list, get_months_list, translations
+from db import *
+from keyboards import *
+
+
 storage = MemoryStorage()
 
-class Create_order(StatesGroup):
-    furniture = State()
+class CreateOrder(StatesGroup):
     description = State()
     month = State()
     day = State()
     time = State()
 
+class CallToManager(StatesGroup):
+    description = State()
+
+
 bot = Bot(TOKEN, parse_mode='HTML')
+
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 def default_message(message: Message):
@@ -35,6 +36,7 @@ def default_message(message: Message):
     first_name = message.from_user.first_name
     username = message.from_user.username,
     message_id = message.message_id
+
     return chat_id, full_name, first_name, username, message_id
 
 def default_call(call: CallbackQuery):
@@ -46,6 +48,7 @@ def default_call(call: CallbackQuery):
     first_name = call.from_user.first_name
     username = call.from_user.username,
     message_id = call.message.message_id
+
     return chat_id, full_name, first_name, username, message_id
 
 def get_translate_text(data, value):
@@ -64,6 +67,7 @@ async def commands(message: Message):
     Reaction on commands
     """
     text = message.text
+
     match text:
         case '/start':
             await choose_language(message)
@@ -95,17 +99,21 @@ async def set_language(message: Message, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_message(message)
     languages = {'🇷🇺 Русский': 'ru', "🇺🇿 O'zbekcha": 'uz'}
+
     await bot.delete_message(
         chat_id=chat_id,
         message_id=message_id-1
     )
+
     await bot.delete_message(
         chat_id=chat_id,
         message_id=message_id
     )
+
     await state.update_data(
         language=languages[message.text]
     )
+
     await register_and_login(message, state)
 
 async def register_and_login(message: CallbackQuery, state: FSMContext):
@@ -114,13 +122,16 @@ async def register_and_login(message: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data()
+
     user = check_user(chat_id=chat_id)
 
     if user:
         login_user(chat_id)
+
         await message.answer(
             text=get_translate_text(data, 'succes_auth'),
         )
+
         await main_menu(message, state)
     else:
         await message.answer(
@@ -135,6 +146,7 @@ async def finish_register(message: Message, state: FSMContext):
     """
     chat_id, _, _, username, message_id = default_message(message)
     data = await state.get_data()
+
     phone = message.contact.phone_number
     register_user(username, phone, chat_id)
 
@@ -151,6 +163,7 @@ async def finish_register(message: Message, state: FSMContext):
     await message.answer(
         text=get_translate_text(data, 'finished_register'),
     )
+
     await main_menu(message, state)
 
 async def main_menu(message: Message, state: FSMContext):
@@ -159,13 +172,15 @@ async def main_menu(message: Message, state: FSMContext):
     """
     chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data()
+
     catalog = get_translate_text(data, 'catalog_btn_keyboard')
     orders = get_translate_text(data, 'orders_btn_keyboard')
     settings = get_translate_text(data, 'settings_btn_keyboard')
+    main_menu = get_translate_text(data, 'main_menu')
 
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'main_menu'),
+        text=main_menu,
         reply_markup=main_menu_keyboard(catalog, orders, settings)
     )
 
@@ -175,12 +190,15 @@ async def main_menu_call(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, _ = default_call(call)
     data = await state.get_data()
+
     catalog = get_translate_text(data, 'catalog_btn_keyboard')
     orders = get_translate_text(data, 'orders_btn_keyboard')
     settings = get_translate_text(data, 'settings_btn_keyboard')
+    main_menu = get_translate_text(data, 'main_menu')
+
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'main_menu'),
+        text=main_menu,
         reply_markup=main_menu_keyboard(catalog, orders, settings)
     )
 
@@ -189,14 +207,15 @@ async def catalog_categories_list(message: Message, state: FSMContext):
     """
     Reaction on button
     """
-    chat_id, _, _, _, _ = default_message(message)
+    chat_id, _, _, _, message_id = default_message(message)
     data = await state.get_data()
 
     await bot.send_message(
         chat_id, 
-        text=get_translate_text(data, 'lets_go'),
+        text='.',
         reply_markup=back_to_main_menu_keyboard(get_translate_text(data, 'back_to_main_menu_btn_keyboard'))
     )
+
     await bot.send_message(
         chat_id, 
         text=get_translate_text(data, 'choose_category'),
@@ -210,9 +229,13 @@ async def catalog_subcategories_list(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data()
+
     category_id = int(call.data.split('_')[-1])
 
-    await state.update_data(category_id=category_id) 
+    await state.update_data(
+        category_id=category_id
+    ) 
+
     await bot.edit_message_text(
         chat_id=chat_id,
         text=get_translate_text(data, 'choose_subcategory'),
@@ -227,9 +250,13 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data()
+
     subcategory_id = int(call.data.split('_')[-1])
     
-    await state.update_data(subcategory_id=subcategory_id) 
+    await state.update_data(
+        subcategory_id=subcategory_id
+    ) 
+
     await bot.edit_message_text(
         chat_id=chat_id,
         text=get_translate_text(data, 'choose_style'),
@@ -244,10 +271,15 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data() 
+
     category_id = data.get('subcategory_id')
     style_id = int(call.data.split('_')[-1])
-    
-    await state.update_data(style_id=style_id) 
+    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
+    call_btn_text = get_translate_text(data, 'call_btn_text')
+
+    await state.update_data(
+        style_id=style_id
+    ) 
 
     images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
         language=data.get('language'),
@@ -256,7 +288,9 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
         pk=0
     )
     
-    await state.update_data(pk=0) 
+    await state.update_data(
+        pk=0
+    ) 
     
     await bot.delete_message(
         chat_id=chat_id,
@@ -283,7 +317,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(get_translate_text(data, 'create_order'), pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
@@ -294,10 +328,16 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data() 
+
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
     pk = data.get('pk') + 1
-    await state.update_data(pk=pk) 
+    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
+    call_btn_text = get_translate_text(data, 'call_btn_text')
+
+    await state.update_data(
+        pk=pk
+    ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
         language=data.get('language'),
@@ -323,7 +363,9 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
         )
         count += 1
 
-    await state.update_data(count=count) 
+    await state.update_data(
+        count=count
+    ) 
 
     await bot.send_media_group(
         chat_id=chat_id,
@@ -333,7 +375,7 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(get_translate_text(data, 'create_order'), pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
@@ -344,10 +386,16 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data() 
+
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
     pk = data.get('pk') - 1
-    await state.update_data(pk=pk) 
+    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
+    call_btn_text = get_translate_text(data, 'call_btn_text')
+
+    await state.update_data(
+        pk=pk
+    ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
         language=data.get('language'),
@@ -373,7 +421,9 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
         )
         count += 1
 
-    await state.update_data(count=count) 
+    await state.update_data(
+        count=count
+    ) 
 
     await bot.send_media_group(
         chat_id=chat_id,
@@ -383,7 +433,7 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(get_translate_text(data, 'create_order'), pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
@@ -409,6 +459,7 @@ async def back_to_subcategories(call: CallbackQuery, state: FSMContext):
     """
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data() 
+
     category_id = data.get('category_id')
 
     await bot.edit_message_text(
@@ -424,20 +475,98 @@ async def back_to_main(message: Message, state: FSMContext):
     Reaction on back button 
     """
     chat_id, _, _, _, message_id = default_message(message)
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
     await bot.delete_message(
         chat_id=chat_id,
         message_id=message_id - 1
     )
+
     await main_menu(message, state)
+
+@dp.callback_query_handler(lambda call: 'call_to_manager_' in call.data)
+async def call_to_manager(call: CallbackQuery, state: FSMContext):
+    """
+    Reaction on call button
+    """
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+
+    furniture = int(call.data.split('_')[-1])
+    num = data.get('count')
+
+    for _ in range(num+1):
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id - _
+        )   
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=get_translate_text(data, 'description_for_call'),
+        reply_markup=ReplyKeyboardRemove()
+    )
     
+    async with state.proxy() as data:
+        data['furniture_pk'] = furniture
+
+    await CallToManager.description.set()
+
+@dp.message_handler(content_types=['text'], state=CallToManager.description)
+async def get_description_for_call(message: Message, state: FSMContext):
+    """
+    Reaction on description
+    """
+    chat_id, _, _, username, message_id = default_message(message)
+    data = await state.get_data() 
+
+    language = data.get('language')
+    phone = get_phone(chat_id)  
+    description = message.text
+    furniture_pk = data['furniture_pk']
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id - 1
+    )
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=get_translate_text(data, 'success_send_message_for_call')
+    )
+
+    await bot.send_message(
+        chat_id=MANAGER,
+        text=get_text_to_manager_for_call(phone, username, furniture_pk, description),
+        parse_mode='Markdown'
+    )
+    
+    await state.finish()
+
+    await state.update_data(
+        language=language
+    )
+    
+    await main_menu(message, state)
+
 @dp.callback_query_handler(lambda call: 'create_order_' in call.data)
 async def confirmation(call: CallbackQuery, state: FSMContext):
     """
     Reaction on call button
     """
     chat_id, _, _, _, message_id = default_call(call)
-    furniture = int(call.data.split('_')[-1])
     data = await state.get_data() 
+
+    furniture = int(call.data.split('_')[-1])
     num = data.get('count')
 
     for _ in range(num+1):
@@ -448,133 +577,146 @@ async def confirmation(call: CallbackQuery, state: FSMContext):
 
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'confirmation_order'),
-        reply_markup=confirmation_keyboard(furniture)
-    )
-    await Create_order.furniture.set()
-
-@dp.callback_query_handler(lambda call: 'confirmation_rejected_' in call.data, state=Create_order.furniture)
-async def confirmation_rejected(call: CallbackQuery, state: FSMContext):
-    """
-    Back to main menu
-    """
-    chat_id, _, _, _, message_id = default_call(call)
-    
-    await state.set_state(None)
-    await bot.delete_message(
-        chat_id=chat_id,
-        message_id=message_id
-    )
-    await main_menu_call(call)
-
-@dp.callback_query_handler(lambda call: 'confirmation_confirmed_' in call.data, state=Create_order.furniture)
-async def get_furniture_for_order(call: CallbackQuery, state: FSMContext):
-    """
-    Reaction on call button
-    """
-    chat_id, _, _, _, message_id = default_call(call)
-    data = await state.get_data() 
-
-    await bot.delete_message(
-        chat_id=chat_id,
-        message_id=message_id
-    )
-    await bot.send_message(
-        chat_id=chat_id,
         text=get_translate_text(data, 'description_for_order'),
         reply_markup=ReplyKeyboardRemove()
     )
+    
     async with state.proxy() as data:
-        data['furniture_pk'] = int(call.data.split('_')[-1])
+        data['furniture_pk'] = furniture
 
-    await Create_order.next()
+    await CreateOrder.description.set()
 
-@dp.message_handler(content_types=['text'], state=Create_order.description)
+@dp.message_handler(content_types=['text'], state=CreateOrder.description)
 async def get_description_for_order(message: Message, state: FSMContext):
     """
     Reaction on description
     """
-    chat_id, _, _, _, _ = default_message(message)
+    chat_id, _, _, _, message_id = default_message(message)
     data = await state.get_data() 
+
     description = message.text
+    
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id - 1
+    )
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
 
     await bot.send_message(
         chat_id=chat_id,
-        text='Выберите месяц:',
-        reply_markup=choose_month_keyboard()
+        text=get_translate_text(data, 'select_month'),
+        reply_markup=choose_month_keyboard(get_months_list(data.get('language')))
     )
 
     async with state.proxy() as data:
         data['description'] = description
 
-    await Create_order.next()
+    await CreateOrder.next()
 
-@dp.callback_query_handler(lambda call: 'select_month_' in call.data, state=Create_order.month)
+@dp.callback_query_handler(lambda call: 'select_month_' in call.data, state=CreateOrder.month)
 async def get_month_for_order(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+
     month = int(call.data.split('_')[-1])
+
     await bot.edit_message_text(
-        chat_id=chat_id,
+        chat_id=chat_id, 
         message_id=message_id,
-        text='Выберите день: Примечание в воскресение мы не работаем.',
-        reply_markup=choose_day_keyboard(month)
+        text=get_translate_text(data, 'select_day'),
+        reply_markup=choose_day_keyboard(month, get_translate_text(data, 'back'), get_days_list(data.get('language')))
     )
+
     async with state.proxy() as data:
         data['month'] = month
-    await Create_order.next()
 
-@dp.callback_query_handler(lambda call: 'select_day_' in call.data, state=Create_order.day)
-async def get_day_for_order(call: CallbackQuery, state: FSMContext):
+    await CreateOrder.next()
+
+@dp.callback_query_handler(lambda call: 'select_month_back' in call.data, state=CreateOrder.day)
+async def select_month_back(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, _, message_id = default_call(call)
-    day = int(call.data.split('_')[-1])
-    name_day = call.data.split('_')[-2]
-    if name_day == 'Сб':
-        markup = choose_time_keyboard(
-            ['10:00-12:00', '12:00-14:00', '14:00-16:00', '16:00-18:00']
-        )
-    else:
-        markup = choose_time_keyboard(
-            ['8:00-10:00', '17:00-19:00']
-        ) 
+    data = await state.get_data()
+
     await bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
-        text='Выберите время:',
-        reply_markup=markup
+        text=get_translate_text(data, 'select_month'),
+        reply_markup=choose_month_keyboard(get_months_list(data.get('language')))
     )
+
+    await CreateOrder.month.set()
+
+@dp.callback_query_handler(lambda call: 'select_day_' in call.data, state=CreateOrder.day)
+async def get_day_for_order(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data() 
+
+    day = int(call.data.split('_')[-1])
+    month = int(call.data.split('_')[-2])
+    year = int(call.data.split('_')[-3])
+
+    await bot.edit_message_text(
+        chat_id=chat_id, 
+        message_id=message_id,
+        text=get_translate_text(data, 'select_time'),
+        reply_markup=choose_time_keyboard(year, month, day, get_translate_text(data, 'back'))
+    )
+
     async with state.proxy() as data:
         data['day'] = day
-    await Create_order.next()
+        data['year'] = year
 
-@dp.callback_query_handler(lambda call: 'select_time_' in call.data, state=Create_order.time)
-async def get_time_for_order(call: CallbackQuery, state: FSMContext):
-    chat_id, _, _, username, _ = default_call(call)
-    data = await state.get_data() 
-    status = 'Ожидание принятия заказа'
-    completed = False
-    user = get_user(chat_id)
-    language = data.get('language')
-    time = call.data.split('_')[-1]
+    await CreateOrder.next()
 
-    await bot.send_message(
+@dp.callback_query_handler(lambda call: 'select_day_back' in call.data, state=CreateOrder.time)
+async def select_day_back(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data()
+
+    month = data['month']
+    
+    await bot.edit_message_text(
         chat_id=chat_id,
-        text=get_translate_text(data, 'success_create_order')
+        message_id=message_id,
+        text=get_translate_text(data, 'select_day'),
+        reply_markup=choose_day_keyboard(month, get_translate_text(data, 'back'), get_days_list(data.get('language')))
     )
-    async with state.proxy() as data:
-        month = int(data['month'])
-        day = int(data['day'])
-        description = data['description']
-        furniture_pk = data(['furniture_pk'])
 
-    datetime_order = f'{datetime.datetime.now().year}-{month}-{day}, {time}'
+    await CreateOrder.day.set()
+
+@dp.callback_query_handler(lambda call: 'select_time_' in call.data, state=CreateOrder.time)
+async def get_time_for_order(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, username, message_id = default_call(call)
+    data = await state.get_data()
+
+    language = data.get('language')
+    user = get_user(chat_id)
+    time = str(call.data.split('_')[-1])
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    async with state.proxy() as data:
+        furniture_pk = data['furniture_pk']
+        description = data['description']
+        year = data['year']
+        month = data['month']
+        day = data['day']
+    
+    datetime = f'{year}-{month}-{day}, {time}'
 
     create_order(
         user=user,
         furniture=furniture_pk,
         description=description,
-        status=status,
-        completed=completed,
-        datetime_booking=datetime_order
+        status='Ожидание принятия',
+        datetime_order=datetime
     )
 
     text = send_message_to_manager(
@@ -582,36 +724,39 @@ async def get_time_for_order(call: CallbackQuery, state: FSMContext):
         username=username, 
         furniture_pk=furniture_pk, 
         description=description, 
-        status=status,
-        datetime_order=datetime_order
+        status='Ожидание принятия',
+        datetime_order=datetime
     )
 
     order = get_order(
         user=user, 
         furniture_pk=furniture_pk, 
         description=description, 
-        status=status, 
-        completed=completed,
-        datetime_order=datetime_order
+        status='Ожидание принятия',
+        datetime=datetime
     )
+
     await bot.send_message(
         chat_id=MANAGER,
         text=text,
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
         parse_mode='Markdown'
     )
-    await main_menu_call(call, state)
+
     await state.finish()
+
     await state.update_data(
         language=language
     )
-
+    
+    await main_menu_call(call, state)
 
 def send_message_to_manager(chat_id, username, furniture_pk, description, status, datetime_order):
     """
     Send message to manager group
     """
     phone = get_phone(chat_id)
+
     text = get_text_to_manager(
         phone=phone,
         username=username, 
@@ -632,12 +777,15 @@ async def confirmed_order(call: CallbackQuery, state: FSMContext):
     await state.update_data(
         order_pk=order
     )
+
     await state.update_data(
         status='принят'
     )
+
     await state.update_data(
         note='Через некоторое время к вам позвонит или напишет наш представитель.'
     )
+
     await bot.send_message(
         chat_id=MANAGER,
         text='Отправьте сообщение пользователю.'
@@ -645,17 +793,31 @@ async def confirmed_order(call: CallbackQuery, state: FSMContext):
    
 @dp.message_handler(content_types=['text'], chat_id=MANAGER)
 async def send_message_order_accepted_to_user(message: Message, state: FSMContext):
+    chat_id, _, _, _, message_id = default_message(message)
     data = await state.get_data()
+
     order_pk = data.get('order_pk')
     status = data.get('status')
     note = data.get('note')
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id - 1
+    )
 
     if order_pk:
         await bot.send_message(
             chat_id=MANAGER,
             text='Сообщение отправлено пользователю.'
         )
+
         chat_id = get_chat_id_by_order(order_pk)
+
         await bot.send_message(
             chat_id=chat_id,
             text=f'''
@@ -667,8 +829,16 @@ async def send_message_order_accepted_to_user(message: Message, state: FSMContex
 {note}
             '''
         )
+
         order = get_order_by_pk(order_pk)[0]
-        update_order(order_pk, order['user'], status.capitalize(), order['completed'])
+
+        update_order(
+            order_pk, 
+            order['user'], 
+            status.capitalize(), 
+            order['completed']
+        )
+
         await state.update_data(
             confirmed_order_pk=None 
         )
@@ -690,6 +860,7 @@ async def user_orders(message: Message, state: FSMContext):
     orders = get_orders_by_user(
         user=get_user(chat_id)
     )[::-1]
+
     for order in orders[:5]:
         await bot.send_message(
             chat_id=chat_id,
@@ -717,15 +888,19 @@ async def confirmed_rejected_order(call: CallbackQuery, state: FSMContext):
     Reaction on call button
     """
     order = int(call.data.split('_')[-1])
+
     await state.update_data(
         order_pk=order
     )
+
     await state.update_data(
         order_pk=order
     )
+
     await state.update_data(
         status='отказан'
     )
+    
     await state.update_data(
         note='Статус вашего заказа изменен на отказ.'
     )

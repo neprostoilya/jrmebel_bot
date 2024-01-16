@@ -1,6 +1,8 @@
 from django.db import models
-from Users.models import UserProfile
 from django.utils.safestring import mark_safe
+
+from Users.models import UserProfile
+
 
 class Categories(models.Model):
     """
@@ -91,7 +93,7 @@ class Furnitures(models.Model):
         verbose_name='Стиль',
         related_name='style'
     )
-    price = models.FloatField(
+    price = models.CharField(
         verbose_name='Цена'
     )
 
@@ -103,7 +105,7 @@ class Furnitures(models.Model):
         description_ru={self.description_ru}, description_uz={self.description_uz}, category={self.category}, style={self.style}'
     
     def descriptiontrim(self):
-        return u"%s..." % (self.description_ru[:100],)
+        return u"%s..." % (self.description_ru[:15],)
     
     descriptiontrim.allow_tags = True
     descriptiontrim.short_description = 'Описание'

@@ -1,12 +1,10 @@
-from datetime import datetime
-from datetime import date as date_from_datetime
-from calendar import monthrange
-from db import get_categories, get_subcategories_by_category, \
-    get_styles
+import datetime
+import calendar
+from db import get_categories, get_order_by_datetime, get_subcategories_by_category, \
+    get_styles, get_times
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardButton, InlineKeyboardMarkup
-
 def phone_button_keyboard(btn) -> dict:
     """
     Phone button keyboard
@@ -91,7 +89,7 @@ def catalog_styles_keyboard(language, back_btn) -> dict:
     )
     return markup
 
-def catalog_furnitures_keyboard(create_order, pk: int, quantity_furnitures: int, get_pk_furniture: int) -> dict:
+def catalog_furnitures_keyboard(call_to_manager: str, create_order: str, pk: int, quantity_furnitures: int, get_pk_furniture: int) -> dict:
     """
     View and buy furnitures
     """
@@ -101,6 +99,7 @@ def catalog_furnitures_keyboard(create_order, pk: int, quantity_furnitures: int,
         InlineKeyboardButton(text=f'{pk + 1}/{quantity_furnitures}', callback_data=f'furnitures_{pk}'),
         InlineKeyboardButton(text='➡', callback_data='action_+'),
         InlineKeyboardButton(text=f'✅ {create_order}', callback_data=f'create_order_{get_pk_furniture}'),
+        InlineKeyboardButton(text=f'📞 {call_to_manager}', callback_data=f'call_to_manager_{get_pk_furniture}'),
     ]
     markup.add(*buttons)
     return markup
@@ -140,17 +139,16 @@ def choose_language_keyboard():
         ], resize_keyboard=True
     )
 
-def choose_month_keyboard():
+def choose_month_keyboard(months: list):
     """
     Choose month keyboard
     """
     markup = InlineKeyboardMarkup(row_width=3)
-    months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     buttons = []
 
     for i, month in enumerate(months, start=4):
         btn = InlineKeyboardButton(
-            month, 
+            text=month, 
             callback_data=f'select_month_{i}'
         )
         buttons.append(btn)
@@ -158,57 +156,91 @@ def choose_month_keyboard():
     markup.add(*buttons)
     return markup
 
-def choose_day_keyboard(month):
+def choose_day_keyboard(month: int, back: str, days: int):
     """
     Choose day keyboard
     """
-    year = datetime.now().year
-    days_month = monthrange(year, month)[1]
     markup = InlineKeyboardMarkup(row_width=7)
-    buttons = []
-    num = 0
-    name_days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-    for day in range(days_month):
-        if num <= 6:
-            if name_days[num] == 'Вс':
-                btn = InlineKeyboardButton(
-                    f'{name_days[num]} {day+1}', 
-                    callback_data=f'ignore'
-                )
-            else:
-                btn = InlineKeyboardButton(
-                    f'{name_days[num]} {day+1}', 
-                    callback_data=f'select_day_{name_days[num]}_{day+1}'
-                )
+    year = datetime.datetime.now().year
+
+    markup.row(*[InlineKeyboardButton(days[i], callback_data="ignore") for i in range(7)])
+
+    first_day = datetime.datetime(year=year, month=month, day=1)
+    first_weekday = first_day.weekday()
+    num_days = calendar.monthrange(year, month)[1]
+
+    buttons = []
+
+    if first_weekday > 0:
+        for _ in range(first_weekday):
+            btn = InlineKeyboardButton(text=" ", callback_data="ignore")
             buttons.append(btn)
-            num += 1
+
+    for day in range(1, num_days + 1):
+        date = datetime.date(year=year, month=month, day=day)
+        day_name = calendar.day_name[date.weekday()]
+
+        if day_name == "Sunday":
+            btn = InlineKeyboardButton(text="-", callback_data="ignore")
+            buttons.append(btn)
         else:
-            num = 0
             btn = InlineKeyboardButton(
-                f'{name_days[num]} {day+1}', 
-                callback_data=f'select_day_{name_days[num]}_{day+1}'
+                text=str(day), callback_data=f"select_day_{year}_{month}_{day}"
             )
             buttons.append(btn)
-            num += 1
+
+    while len(buttons) % 7 != 0:
+        btn = InlineKeyboardButton(text=" ", callback_data="ignore")
+        buttons.append(btn)
 
     markup.add(*buttons)
+
+    markup.row(
+        InlineKeyboardButton(text=f"⬅️ {back}", callback_data="select_month_back")
+    )
+
     return markup
 
-def choose_time_keyboard(times_list):
+def choose_time_keyboard(year: int, month: int, day: int, back: str):
     """
     Choose time keyboard
     """
     markup = InlineKeyboardMarkup(row_width=2)
+    
+    date = datetime.date(
+        year=year, 
+        month=month, 
+        day=day
+    )
+
+    day_name = calendar.day_name[date.weekday()]
+
     buttons = []
 
-    for time in times_list:
-        btn = InlineKeyboardButton(
-            time, 
-            callback_data=f'select_time_{time}'
+    times_list = get_times(str(day_name))
+
+
+    for _ in times_list:
+        time = _['time']
+
+        btn = (
+            InlineKeyboardButton(
+                text=time, 
+                callback_data=f'select_time_{time}'
+            )
         )
         buttons.append(btn)
 
     markup.add(*buttons)
+
+    markup.row(
+        InlineKeyboardButton(
+            text=f'⬅ {back}', 
+            callback_data='select_day_back'
+        )
+    )
+
     return markup
+
 

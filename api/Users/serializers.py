@@ -1,8 +1,9 @@
-from Users.models import UserProfile
 from rest_framework import serializers
 
+from Users.models import UserProfile
 from config.settings import BOT_PK
 from .logics.login import authenticate
+
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -32,6 +33,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         username = validated_data['username']
         phone = validated_data['phone']
         telegram_pk = validated_data['telegram_pk']
+        
         user = UserProfile.objects.create_user(
             username=username,
             phone=phone,

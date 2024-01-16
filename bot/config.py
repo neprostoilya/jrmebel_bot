@@ -4,12 +4,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # BOT TOKEN 
-TOKEN = os.getenv('BOT_TOKEN')
+TOKEN = '6810108018:AAGzk64T-fYEV3IbCIlF2jQBjTdcx2ZmkyU'
 # ADMIN CHAT ID
-ADMIN = os.getenv('BOT_ADMIN')
+ADMIN =  5974014808
 # URL API
 URL = os.getenv('API_HOST')
 # BOT PK
-BOT_PK = os.getenv('BOT_PK')
+BOT_PK =  6810108018
 # MANAGER GROUP
-MANAGER = os.getenv('MANAGER')
+MANAGER = -1002101263438

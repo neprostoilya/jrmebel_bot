@@ -1,6 +1,8 @@
 from django.urls import path
+
 from Catalog.views import CategoriesAPIView, SubcategoriesAPIView, \
     StylesAPIView, FurnituresAPIView, GalleryAPIView, GetFurnitureAPIView
+
 
 app_name = 'Catalog'
 

@@ -27,13 +27,11 @@ class Orders(models.Model):
         null=True
     )
     datetime_order = models.CharField(
+        unique=True,
         verbose_name='Дата и время бронирования',
     )
     status = models.CharField(
         verbose_name='Статус'
-    )
-    completed = models.BooleanField(
-        verbose_name='Выполнен'
     )
 
     def descriptiontrim(self):
@@ -70,7 +68,7 @@ class Orders(models.Model):
         return self.user.username
     
     def __repr__(self):
-        return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, description={self.description}, completed={self.completed}, datetime_booking={self.datetime_booking}'
+        return f'Order: pk={self.pk}, user={self.user}, furniture={self.furniture}, description={self.description} datetime_order={self.datetime_order}'
            
     class Meta:
         verbose_name = 'Заказ'

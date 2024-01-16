@@ -1,4 +1,4 @@
-from Catalog.models import Categories, Styles, Furnitures
+from Catalog.models import Categories
 
 def get_subcategories_by_category(category):
     """

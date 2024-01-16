@@ -8,6 +8,7 @@ urlpatterns = [
     path('users/', include('Users.urls', namespace='Users')),
     path('catalog/', include('Catalog.urls', namespace='Catalog')),
     path('order/', include('Order.urls', namespace='Order')),
+    path('times/', include('Times.urls', namespace='Times')),
 ]
 
 if settings.DEBUG:

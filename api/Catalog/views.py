@@ -11,87 +11,86 @@ class CategoriesAPIView(APIView):
     """
     View Categories
     """
+    model = Categories
     serializer_class = CategoriesSerializer
 
     def get(self, request):
-        """
-        Get Categories
-        """
-        categories = Categories.objects.all().filter(
+        categories = self.model.objects.all().filter(
             subcategory=None
         )
-        serializer = CategoriesSerializer(categories, many=True)
+
+        serializer = self.serializer_class(categories, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class SubcategoriesAPIView(APIView):
     """
     View Subcategories
     """
+    serializer_class = CategoriesSerializer
 
     def get(self, request, category):
-        """
-        Get Subcategories
-        """
         subcategories = get_subcategories_by_category(
             category=category
         )
-        serializer = CategoriesSerializer(subcategories, many=True)
+
+        serializer = self.serializer_class(subcategories, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 class StylesAPIView(APIView):
     """
     View Styles
     """
+    model = Styles
+    serializer_class = StylesSerializer
 
     def get(self, request):
-        """
-        Get Styles
-        """
-        styles = Styles.objects.all()
-        serializer = StylesSerializer(styles, many=True)
+        styles = self.model.objects.all()
+
+        serializer = self.serializer_class(styles, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class FurnituresAPIView(APIView):
     """
     View Furnitures
     """
+    model = Furnitures
+    serializer_class = FurnituresSerializer
 
     def get(self, request, category, style):
-        """
-        Get Furnitures
-        """
-        furnitures = Furnitures.objects.filter(
+        furnitures = self.model.objects.filter(
             category=category,
             style=style,
         )
-        serializer = FurnituresSerializer(furnitures, many=True)
+
+        serializer = self.serializer_class(furnitures, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
 class GalleryAPIView(APIView):
     """
     View Gallery
     """
+    model = Gallery
+    serializer_class = GallerySerializer
 
     def get(self, request, furniture):
-        """
-        Get Gallery
-        """
-        furnitures = Gallery.objects.filter(
+        furnitures = self.model.objects.filter(
             furniture=furniture
         )
-        serializer = GallerySerializer(furnitures, many=True)
+
+        serializer = self.serializer_class(furnitures, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
     
 class GetFurnitureAPIView(APIView):
     """
     Get Furniture by pk
     """
+    model = Furnitures
+    serializer_class = FurnituresSerializer
+
     def get(self, request, pk):
-        """
-        Get Furnitures
-        """
-        furniture = Furnitures.objects.filter(
+        furniture = self.model.objects.filter(
             pk=pk
         )
-        serializer = FurnituresSerializer(furniture, many=True)
+        
+        serializer = self.serializer_class(furniture, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)

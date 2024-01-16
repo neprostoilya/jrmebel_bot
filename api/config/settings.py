@@ -6,13 +6,13 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-aska0_q^e-t5^k=9f=ul=^dlllb5qu78(5ludu6qqjy3o%c+^6'
 
-DEBUG = bool(int(os.getenv('DEBUG')))
+DEBUG = True
 
 AUTH_USER_MODEL = 'Users.UserProfile'
 
-BOT_PK = os.getenv('BOT_PK')
+BOT_PK = 6810108018
 
 ALLOWED_HOSTS = ['*']
 
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'Catalog.apps.CatalogConfig',
     'Users.apps.UsersConfig',
     'Order.apps.OrderConfig',
+    'Times.apps.TimesConfig',
     'rest_framework',
 ]
 
@@ -67,11 +68,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('NAME'), 
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'), 
-        'PORT': os.getenv('PORT'),
+        'NAME': 'postgres', 
+        'USER': 'postgres',
+        'PASSWORD': '18960707',
+        'HOST': 'database', 
+        'PORT': '5432'
     }
 }
 
@@ -132,6 +133,8 @@ JAZZMIN_SETTINGS = {
         "Catalog.Styles": "fas fa-palette",
         "Catalog.Furnitures": "fas fa-couch",
         "Order.Orders": "fas fa-shopping-cart",
+        "Times.Days": "fas fa-calendar",
+        "Times.Times": "fas fa-clock",
     },
     "related_modal_active": False,
     "use_google_fonts_cdn": True,
