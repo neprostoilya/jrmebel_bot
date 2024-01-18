@@ -70,7 +70,6 @@ class Furnitures(models.Model):
         verbose_name='Название мебели на узбекском'
     )
     image = models.ImageField(
-        upload_to='furnitures/', 
         null=True, 
         blank=True, 
         verbose_name='Фото'

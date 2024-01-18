@@ -6,18 +6,17 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-aska0_q^e-t5^k=9f=ul=^dlllb5qu78(5ludu6qqjy3o%c+^6'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
+DEBUG = bool(int(os.getenv('DEBUG')))
 
 AUTH_USER_MODEL = 'Users.UserProfile'
 
-BOT_PK = 6810108018
+BOT_PK = os.getenv('BOT_PK')
 
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost/']
-
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
@@ -42,11 +41,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 ROOT_URLCONF = 'config.urls'
-
 SITE_ID = 1
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -62,17 +58,15 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'config.wsgi.application'
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres', 
-        'USER': 'postgres',
-        'PASSWORD': '18960707',
-        'HOST': 'database', 
-        'PORT': '5432'
+        'NAME': os.getenv('NAME'), 
+        'USER': os.getenv('USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'), 
+        'PORT': os.getenv('PORT'),
     }
 }
 
@@ -90,29 +84,15 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 MEDIA_URL = '/media/'
-
 STATIC_URL = '/static/'
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-MEDIA_URL = '/media/'
-
-MEDIA_ROOT = BASE_DIR / 'media'
-
 LANGUAGE_CODE = 'ru-ru'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 JAZZMIN_SETTINGS = {
     "site_title": "CRM",
     "site_header": "CRM",
@@ -133,8 +113,6 @@ JAZZMIN_SETTINGS = {
         "Catalog.Styles": "fas fa-palette",
         "Catalog.Furnitures": "fas fa-couch",
         "Order.Orders": "fas fa-shopping-cart",
-        "Times.Days": "fas fa-calendar",
-        "Times.Times": "fas fa-clock",
     },
     "related_modal_active": False,
     "use_google_fonts_cdn": True,
@@ -142,7 +120,6 @@ JAZZMIN_SETTINGS = {
     "changeform_format": "horizontal_tabs",
     "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
 }
-
 JAZZMIN_UI_TWEAKS = {
     "navbar_small_text": False,
     "footer_small_text": False,

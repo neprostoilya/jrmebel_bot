@@ -9,8 +9,8 @@ services:
       - database
     volumes:
       - .:/api
-      - static:/api/static/
-      - media:/api/media/
+      - static:/api/api/static/
+      - media:/api/api/media/
     environment:
       - DATABASE_HOST=database
     env_file:
@@ -44,8 +44,8 @@ services:
     depends_on:
       - api
     volumes:
-      - static:/api/static/
-      - media:/api/media/
+      - static:/api/api/static/
+      - media:/api/api/media/
     ports:
       - 80:80
 
