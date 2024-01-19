@@ -113,7 +113,7 @@ def get_text_for_call(title, description_furniture, category, style, price, user
 
 Стиль мебели: *{style}*
 
-Цена: *{price} сумм*
+Цена: *{price}*
     '''
 
 def get_text_for_manager(title, description_furniture, category, style, price, username, description, phone, status, datetime_order):

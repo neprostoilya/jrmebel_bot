@@ -61,7 +61,7 @@ def get_translate_text(data, value):
     except KeyError:
         pass
 
-@dp.message_handler(commands=['start', 'help', 'about']) 
+@dp.message_handler(commands=['start', 'help', 'about'], state='*') 
 async def commands(message: Message):
     """
     Reaction on commands
@@ -207,7 +207,7 @@ async def catalog_categories_list(message: Message, state: FSMContext):
     """
     Reaction on button
     """
-    chat_id, _, _, _, message_id = default_message(message)
+    chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data()
 
     await bot.send_message(
@@ -278,7 +278,8 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
-        style_id=style_id
+        pk=0,
+        style_id=style_id,
     ) 
 
     images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
@@ -287,10 +288,6 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
         style_id=style_id,
         pk=0
     )
-    
-    await state.update_data(
-        pk=0
-    ) 
     
     await bot.delete_message(
         chat_id=chat_id,
@@ -302,7 +299,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
 
     for path in images_path:
         media.attach_photo(
-            photo=InputFile(f'api{path}'), 
+            photo=InputFile(f'/api/api{path}'),   
             caption='Фото'
         )
         count += 1
@@ -336,7 +333,8 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
-        pk=pk
+        pk=pk,
+        style_id=style_id
     ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
@@ -358,7 +356,7 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
 
     for path in images_path:
         media.attach_photo(
-            photo=InputFile(f'api{path}'), 
+            photo=InputFile(f'/api/api{path}'), 
             caption='Фото'
         )
         count += 1
@@ -394,7 +392,8 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
-        pk=pk
+        pk=pk,
+        style_id=style_id
     ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
@@ -416,7 +415,7 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
 
     for path in images_path:
         media.attach_photo(
-            photo=InputFile(f'api{path}'), 
+            photo=InputFile(f'/api/api{path}'), 
             caption='Фото'
         )
         count += 1
@@ -609,13 +608,68 @@ async def get_description_for_order(message: Message, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=get_translate_text(data, 'select_month'),
-        reply_markup=choose_month_keyboard(get_months_list(data.get('language')))
+        reply_markup=choose_month_keyboard(get_translate_text(data, 'back'), get_months_list(data.get('language')))
     )
 
     async with state.proxy() as data:
         data['description'] = description
 
     await CreateOrder.next()
+
+@dp.callback_query_handler(lambda call: 'back_to_furniture' in call.data, state=CreateOrder.month)
+async def back_to_furniture(call: CallbackQuery, state: FSMContext):
+    chat_id, _, _, _, message_id = default_call(call)
+    data = await state.get_data()
+    language = data.get('language')
+
+    category_id = data.get('subcategory_id')
+    style_id = data.get('style_id')
+    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
+    call_btn_text = get_translate_text(data, 'call_btn_text')
+
+    images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
+        language=language,
+        category_id=category_id,
+        style_id=style_id,
+        pk=0
+    )
+    
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id
+    )
+
+    count = 0
+    media = MediaGroup()
+
+    for path in images_path:
+        media.attach_photo(
+            photo=InputFile(f'/api/api{path}'),   
+            caption='Фото'
+        )
+        count += 1
+
+
+    await bot.send_media_group(
+        chat_id=chat_id,
+        media=media
+    )
+    
+    await bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+        parse_mode='Markdown'
+    )
+
+    await state.finish()
+
+    await state.update_data(
+        language=language,
+        count=count,
+        pk=0,
+        style_id=style_id
+    )
 
 @dp.callback_query_handler(lambda call: 'select_month_' in call.data, state=CreateOrder.month)
 async def get_month_for_order(call: CallbackQuery, state: FSMContext):

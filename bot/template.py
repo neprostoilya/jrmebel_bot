@@ -65,7 +65,7 @@ __{furniture['description_ru']}__
 
 Стиль: *{furniture['get_style_title_ru']}*
 
-Цена: *{furniture['price']}* сумм
+Цена: *{furniture['price']}* 
         '''
     else:
         return f'''
@@ -78,7 +78,7 @@ Kategoriya: *{furniture['get_category_title_uz']}*
 
 Stil: *{furniture['get_style_title_uz']}*
 
-Narx: *{furniture['price']}* so'm
+Narx: *{furniture['price']}* 
         '''
 
 def text_order(language, order):

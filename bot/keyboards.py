@@ -139,7 +139,7 @@ def choose_language_keyboard():
         ], resize_keyboard=True
     )
 
-def choose_month_keyboard(months: list):
+def choose_month_keyboard(back: str, months: list):
     """
     Choose month keyboard
     """
@@ -154,6 +154,10 @@ def choose_month_keyboard(months: list):
         buttons.append(btn)
 
     markup.add(*buttons)
+    
+    markup.row(
+        InlineKeyboardButton(text=f"⬅️ {back}", callback_data="back_to_furniture")
+    )
     return markup
 
 def choose_day_keyboard(month: int, back: str, days: int):
