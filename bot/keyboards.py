@@ -146,7 +146,7 @@ def choose_month_keyboard(back: str, months: list):
     markup = InlineKeyboardMarkup(row_width=3)
     buttons = []
 
-    for i, month in enumerate(months, start=4):
+    for i, month in enumerate(months, start=1):
         btn = InlineKeyboardButton(
             text=month, 
             callback_data=f'select_month_{i}'

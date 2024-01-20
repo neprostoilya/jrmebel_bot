@@ -699,7 +699,7 @@ async def select_month_back(call: CallbackQuery, state: FSMContext):
         chat_id=chat_id,
         message_id=message_id,
         text=get_translate_text(data, 'select_month'),
-        reply_markup=choose_month_keyboard(get_months_list(data.get('language')))
+        reply_markup=choose_month_keyboard(get_translate_text(data, 'back'), get_months_list(data.get('language')))
     )
 
     await CreateOrder.month.set()
@@ -795,6 +795,11 @@ async def get_time_for_order(call: CallbackQuery, state: FSMContext):
         text=text,
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
         parse_mode='Markdown'
+    )
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=get_translate_text(data, 'success_create_order')
     )
 
     await state.finish()
