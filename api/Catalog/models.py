@@ -61,6 +61,9 @@ class Furnitures(models.Model):
     """
     Furnitures
     """
+    image = models.ImageField(
+        verbose_name='Фото'
+    )
     title_ru = models.CharField(
         max_length=155,
         verbose_name='Название мебели на русском'
@@ -68,11 +71,6 @@ class Furnitures(models.Model):
     title_uz = models.CharField(
         max_length=155,
         verbose_name='Название мебели на узбекском'
-    )
-    image = models.ImageField(
-        null=True, 
-        blank=True, 
-        verbose_name='Фото'
     )
     description_ru = models.TextField(
         verbose_name='Описание на русском'
@@ -100,8 +98,8 @@ class Furnitures(models.Model):
         return self.title_ru
     
     def __repr__(self):
-        return f'Furniture: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}, image={self.image}, \
-        description_ru={self.description_ru}, description_uz={self.description_uz}, category={self.category}, style={self.style}'
+        return f'Furniture: pk={self.pk}, image={self.image}, title_ru={self.title_ru}, title_uz={self.title_uz},  \
+        description_ru={self.description_ru}, description_uz={self.description_uz}, category={self.category}, style={self.style}, price={self.price}'
     
     def descriptiontrim(self):
         return u"%s..." % (self.description_ru[:15],)
@@ -110,8 +108,9 @@ class Furnitures(models.Model):
     descriptiontrim.short_description = 'Описание'
 
     def img_preview(self): 
+        if self.image.url:
             return mark_safe(f'<img src="{self.image.url}" width="75px" height="75px"/>')
-    
+        
     img_preview.allow_tags = True
     img_preview.short_description = 'Миниатюра'
 

@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv() 
+load_dotenv()
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -62,13 +62,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('NAME'), 
+        'NAME': os.getenv('NAME'),        
         'USER': os.getenv('USER'),
         'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'), 
+        'HOST': os.getenv('HOST'),
         'PORT': os.getenv('PORT'),
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -84,6 +85,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
@@ -93,6 +95,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 JAZZMIN_SETTINGS = {
     "site_title": "CRM",
     "site_header": "CRM",
@@ -113,6 +116,7 @@ JAZZMIN_SETTINGS = {
         "Catalog.Styles": "fas fa-palette",
         "Catalog.Furnitures": "fas fa-couch",
         "Order.Orders": "fas fa-shopping-cart",
+        "Times.Times": "fas fa-clock",
     },
     "related_modal_active": False,
     "use_google_fonts_cdn": True,
