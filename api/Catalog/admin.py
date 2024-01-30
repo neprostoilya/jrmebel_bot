@@ -23,8 +23,9 @@ class StylesAdmin(admin.ModelAdmin):
     """
     Styles 
     """
-    list_display = ('pk', 'title_ru',)
+    list_display = ('pk', 'title_ru', 'category')
     list_display_links = ('pk', 'title_ru',)
+    list_editable = ('category',)
 
 @admin.register(Furnitures)
 class FurnituresAdmin(admin.ModelAdmin):

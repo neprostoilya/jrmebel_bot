@@ -21,9 +21,8 @@ def get_furnitures(language: str, category_id: int, style_id: int, pk: int):
         get_pk = furniture['pk']
 
         images_path = []
-        images_path += get_gallery(get_pk)
         images_path.append(furniture['image'])
-
+        images_path += get_gallery(get_pk)
         return images_path, pk, text, quantity_furnitures, get_pk
     else:
         raise ValueError

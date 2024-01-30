@@ -78,11 +78,11 @@ def get_categories():
 
     return data
 
-def get_styles():
+def get_styles(category):
     """
     Get Styles Firnitures
     """
-    data = get('catalog/get_styles/')
+    data = get(f'catalog/get_styles/{category}')
 
     return data
 

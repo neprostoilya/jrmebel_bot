@@ -70,13 +70,13 @@ def catalog_subcategories_keyboard(language, back_btn, category_id: int) -> dict
     )
     return markup
 
-def catalog_styles_keyboard(language, back_btn) -> dict:
+def catalog_styles_keyboard(language, back_btn, category) -> dict:
     """
     Catalog styles keyboard
     """
     markup = InlineKeyboardMarkup(row_width=2)
     buttons = []
-    styles = get_styles()
+    styles = get_styles(category)
     for style in styles:
         bnt = InlineKeyboardButton(
             text=style[f'title_{language}'],

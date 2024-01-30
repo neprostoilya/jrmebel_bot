@@ -46,12 +46,17 @@ class Styles(models.Model):
         max_length=100,
         verbose_name='Название cтиля категории на узбекском'
     )
+    category = models.ForeignKey(
+        Categories,
+        verbose_name='Категория',
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.title_ru
     
     def __repr__(self):
-        return f'Style: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}'
+        return f'Style: pk={self.pk}, title_ru={self.title_ru}, title_uz={self.title_uz}, category={self.category}'
     
     class Meta:
         verbose_name = 'Стиль Категории Мебели'

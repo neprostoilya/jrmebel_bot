@@ -15,7 +15,7 @@ class StylesSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Styles
-        fields = ('pk', 'title_ru', 'title_uz')
+        fields = ('pk', 'title_ru', 'title_uz', 'category')
 
 class FurnituresSerializer(serializers.ModelSerializer):
     """

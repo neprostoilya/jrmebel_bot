@@ -43,8 +43,10 @@ class StylesAPIView(APIView):
     model = Styles
     serializer_class = StylesSerializer
 
-    def get(self, request):
-        styles = self.model.objects.all()
+    def get(self, request, category):
+        styles = self.model.objects.filter(
+            category=category
+        )
 
         serializer = self.serializer_class(styles, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)

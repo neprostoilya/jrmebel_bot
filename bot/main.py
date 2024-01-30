@@ -261,7 +261,7 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
         chat_id=chat_id,
         text=get_translate_text(data, 'choose_style'),
         message_id=message_id,
-        reply_markup=catalog_styles_keyboard(data.get('language'), get_translate_text(data, 'back'))
+        reply_markup=catalog_styles_keyboard(data.get('language'), get_translate_text(data, 'back'), subcategory_id)
     )
 
 @dp.callback_query_handler(lambda call: 'style_' in call.data)
@@ -648,7 +648,6 @@ async def back_to_furniture(call: CallbackQuery, state: FSMContext):
             caption='Фото'
         )
         count += 1
-
 
     await bot.send_media_group(
         chat_id=chat_id,

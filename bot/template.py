@@ -137,3 +137,6 @@ def get_days_list(language):
     else:
         days = ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Yak']
     return days
+
+
+
