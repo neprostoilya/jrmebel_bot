@@ -96,3 +96,18 @@ class GetFurnitureAPIView(APIView):
         
         serializer = self.serializer_class(furniture, many=True)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+class GetFurnituresByCategoryAPIView(APIView):
+    """
+    Get Furniture by category
+    """
+    model = Furnitures
+    serializer_class = FurnituresSerializer
+
+    def get(self, request, category):
+        furniture = self.model.objects.filter(
+            category=category
+        )
+        
+        serializer = self.serializer_class(furniture, many=True)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)

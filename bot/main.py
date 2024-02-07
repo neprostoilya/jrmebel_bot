@@ -92,7 +92,7 @@ async def choose_language(message: Message):
         reply_markup=choose_language_keyboard()
     )   
 
-@dp.message_handler(lambda message: 'Русский'  in message.text or "O'zbekcha" in message.text)
+@dp.message_handler(lambda message: 'Русский'  in message.text or "O'zbekcha" in message.text, state='*')
 async def set_language(message: Message, state: FSMContext):
     """
     Set language
@@ -139,7 +139,7 @@ async def register_and_login(message: CallbackQuery, state: FSMContext):
             reply_markup=phone_button_keyboard(get_translate_text(data, 'phone_btn_keyboard'))
         )
 
-@dp.message_handler(content_types=['contact']) 
+@dp.message_handler(content_types=['contact'], state='*') 
 async def finish_register(message: Message, state: FSMContext):
     """
     Registration User
@@ -202,7 +202,7 @@ async def main_menu_call(call: CallbackQuery, state: FSMContext):
         reply_markup=main_menu_keyboard(catalog, orders, settings)
     )
 
-@dp.message_handler(lambda message: 'Каталог'  in message.text or 'Katalog' in message.text)
+@dp.message_handler(lambda message: 'Каталог'  in message.text or 'Katalog' in message.text, state='*')
 async def catalog_categories_list(message: Message, state: FSMContext):
     """
     Reaction on button
@@ -251,19 +251,68 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data()
 
-    subcategory_id = int(call.data.split('_')[-1])
+    subcategory_id = int(call.data.split('_')[-2])
+    without_style = call.data.split('_')[-1]
     
     await state.update_data(
         subcategory_id=subcategory_id
     ) 
+    
+    if without_style == 'False':
+        styles = get_styles(subcategory_id)
+        await bot.edit_message_text(
+            chat_id=chat_id,
+            text=get_translate_text(data, 'choose_style'),
+            message_id=message_id,
+            reply_markup=catalog_styles_keyboard(styles, data.get('language'), get_translate_text(data, 'back'), subcategory_id)
+        )
+    else:
+        create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
+        call_btn_text = get_translate_text(data, 'call_btn_text')
 
-    await bot.edit_message_text(
-        chat_id=chat_id,
-        text=get_translate_text(data, 'choose_style'),
-        message_id=message_id,
-        reply_markup=catalog_styles_keyboard(data.get('language'), get_translate_text(data, 'back'), subcategory_id)
-    )
+        await state.update_data(
+            pk=0,
+            style_id=None,
+            without_style=without_style
+        ) 
 
+        images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
+            language=data.get('language'),
+            without_style=without_style,
+            style_id=None,
+            category_id=subcategory_id,
+            pk=0
+        )
+        
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id
+        )
+
+        count = 0
+        media = MediaGroup()
+
+        for path in images_path:
+            media.attach_photo(
+                photo=InputFile(f'/api/api{path}'),   
+                caption='Фото'
+            )
+            count += 1
+
+        await state.update_data(count=count) 
+
+        await bot.send_media_group(
+            chat_id=chat_id,
+            media=media
+        )
+        
+        await bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+            parse_mode='Markdown'
+        )
+        
 @dp.callback_query_handler(lambda call: 'style_' in call.data)
 async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     """
@@ -286,6 +335,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
         language=data.get('language'),
         category_id=category_id,
         style_id=style_id,
+        without_style=None,
         pk=0
     )
     
@@ -328,19 +378,22 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
 
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
+    without_style = data.get('without_style')
     pk = data.get('pk') + 1
     create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
     call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
         pk=pk,
-        style_id=style_id
+        style_id=style_id,
+        without_style=without_style
     ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
         language=data.get('language'),
         category_id=category_id,
         style_id=style_id,
+        without_style=without_style,
         pk=pk
     )
     get_count = data.get('count')
@@ -387,19 +440,22 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
 
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
+    without_style = data.get('without_style')
     pk = data.get('pk') - 1
     create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
     call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
         pk=pk,
-        style_id=style_id
+        style_id=style_id,
+        without_style=without_style
     ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
         language=data.get('language'),
         category_id=category_id,
         style_id=style_id,
+        without_style=without_style,
         pk=pk
     )
     get_count = data.get('count')
@@ -474,17 +530,27 @@ async def back_to_main(message: Message, state: FSMContext):
     Reaction on back button 
     """
     chat_id, _, _, _, message_id = default_message(message)
+    data = await state.get_data()
 
-    await bot.delete_message(
-        chat_id=chat_id,
-        message_id=message_id
-    )
+    count = data.get('count')
+    
+    if count:
+        for _ in range(count+1):
+            await bot.delete_message(
+                chat_id=chat_id,
+                message_id=message_id-_
+            )
+    else:
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id
+        )
 
-    await bot.delete_message(
-        chat_id=chat_id,
-        message_id=message_id - 1
-    )
-
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id - 1
+        )
+        
     await main_menu(message, state)
 
 @dp.callback_query_handler(lambda call: 'call_to_manager_' in call.data)
@@ -901,7 +967,7 @@ async def send_message_order_accepted_to_user(message: Message, state: FSMContex
             confirmed_order_pk=None 
         )
 
-@dp.message_handler(lambda message: 'Заказы'  in message.text or 'Buyurtmalar' in message.text)
+@dp.message_handler(lambda message: 'Заказы'  in message.text or 'Buyurtmalar' in message.text, state='*')
 async def user_orders(message: Message, state: FSMContext):
     """
     Reaction on button
@@ -926,7 +992,7 @@ async def user_orders(message: Message, state: FSMContext):
             parse_mode='Markdown'
         )
     
-@dp.message_handler(lambda message: 'Настройки'  in message.text or 'Sozlamalar' in message.text)
+@dp.message_handler(lambda message: 'Настройки'  in message.text or 'Sozlamalar' in message.text, state='*')
 async def settings(message: Message, state: FSMContext):
     """
     Reaction on button

@@ -1,16 +1,21 @@
 from db import get_furnitures_by_category_and_style, get_gallery, \
-    get_furniture
+    get_furniture, get_furnitures_by_category
 from template import text_for_furniture, text_order
 
-def get_furnitures(language: str, category_id: int, style_id: int, pk: int):
+def get_furnitures(without_style: bool, language: str, category_id: int, style_id: int, pk: int):
     """
     Get furniture by category_id, style_id, pk
     """
-    furnitures = get_furnitures_by_category_and_style(
-        category=category_id,
-        style=style_id
-    )
-
+    if not without_style:
+        furnitures = get_furnitures_by_category_and_style(
+            category=category_id,
+            style=style_id
+        )
+    else:
+        furnitures = get_furnitures_by_category(
+            category=category_id
+        )
+        
     quantity_furnitures = len(furnitures)
 
     if pk <= quantity_furnitures -1 and pk >= 0:
@@ -94,6 +99,7 @@ def get_text_for_call(title, description_furniture, category, style, price, user
     """
     Get text for call
     """
+    styles_info = f"\nStil: *{style}*\n" if style else ''
     return f'''
 Пользователь заказал звонок.
     
@@ -109,9 +115,7 @@ def get_text_for_call(title, description_furniture, category, style, price, user
 {description_furniture}
 
 Категория мебели: *{category}*
-
-Стиль мебели: *{style}*
-
+{styles_info}
 Цена: *{price}*
     '''
 
@@ -119,6 +123,7 @@ def get_text_for_manager(title, description_furniture, category, style, price, u
     """
     Get text for furniture
     """
+    styles_info = f"\nStil: *{style}*\n" if style else ''
     return f'''
 Название мебели: *{title}*
 
@@ -126,9 +131,7 @@ def get_text_for_manager(title, description_furniture, category, style, price, u
 {description_furniture}
 
 Категория мебели: *{category}*
-
-Стиль мебели: *{style}*
-
+{styles_info}
 Цена: *{price} сумм*
 
 Пользователь: @{username[0]}

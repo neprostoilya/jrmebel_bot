@@ -102,6 +102,14 @@ def get_furnitures_by_category_and_style(category, style):
 
     return data
 
+def get_furnitures_by_category(category):
+    """
+    Get Furnitures by Category 
+    """
+    data = get(f'catalog/get_furnitures_by_category/{category}/')
+
+    return data
+
 def create_order(user: int, furniture: int, description: str, status: str, datetime_order: str):
     """
     Create Order

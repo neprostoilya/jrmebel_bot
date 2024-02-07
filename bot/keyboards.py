@@ -61,7 +61,7 @@ def catalog_subcategories_keyboard(language, back_btn, category_id: int) -> dict
     for subcategory in subcategories:
         bnt = InlineKeyboardButton(
             text=subcategory[f'title_{language}'],
-            callback_data=f"subcategory_{subcategory['pk']}"
+            callback_data=f"subcategory_{subcategory['pk']}_{subcategory['without_style']}"
         )
         buttons.append(bnt)
     markup.add(*buttons)
@@ -70,13 +70,12 @@ def catalog_subcategories_keyboard(language, back_btn, category_id: int) -> dict
     )
     return markup
 
-def catalog_styles_keyboard(language, back_btn, category) -> dict:
+def catalog_styles_keyboard(styles, language, back_btn, category) -> dict:
     """
     Catalog styles keyboard
     """
     markup = InlineKeyboardMarkup(row_width=2)
     buttons = []
-    styles = get_styles(category)
     for style in styles:
         bnt = InlineKeyboardButton(
             text=style[f'title_{language}'],

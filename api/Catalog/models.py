@@ -23,7 +23,10 @@ class Categories(models.Model):
         blank=True,
         verbose_name='Категория',
     )
-
+    without_style = models.BooleanField(
+        verbose_name='Без стиля'
+    )
+    
     def __str__(self):
         return self.title_ru
     
@@ -47,11 +50,11 @@ class Styles(models.Model):
         verbose_name='Название cтиля категории на узбекском'
     )
     category = models.ForeignKey(
-        Categories,
+        Categories, 
+        on_delete=models.CASCADE, 
         verbose_name='Категория',
-        on_delete=models.CASCADE,
     )
-
+    
     def __str__(self):
         return self.title_ru
     
@@ -93,7 +96,9 @@ class Furnitures(models.Model):
         Styles, 
         on_delete=models.CASCADE, 
         verbose_name='Стиль',
-        related_name='style'
+        related_name='style',
+        null=True,
+        blank=True,
     )
     price = models.CharField(
         verbose_name='Цена'
@@ -126,10 +131,12 @@ class Furnitures(models.Model):
         return self.category.title_uz
 
     def get_style_title_ru(self):
-        return self.style.title_ru
+        if self.style:
+            return self.style.title_ru
 
     def get_style_title_uz(self):
-        return self.style.title_uz
+        if self.style:
+            return self.style.title_uz
 
     class Meta:
         verbose_name = 'Мебель'

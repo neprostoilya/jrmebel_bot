@@ -14,8 +14,8 @@ class CategoriesAdmin(admin.ModelAdmin):
     """
     Categories 
     """
-    list_display = ('pk', 'title_ru', 'subcategory')
-    list_editable = ('subcategory',)
+    list_display = ('pk', 'title_ru', 'subcategory', 'without_style')
+    list_editable = ('subcategory', 'without_style')
     list_display_links = ('pk', 'title_ru',)
 
 @admin.register(Styles)

@@ -56,6 +56,7 @@ translations = {
 
 def text_for_furniture(language, furniture):
     if language == 'ru':
+        styles_info = f"\nСтиль: *{furniture['get_style_title_ru']}*\n" if furniture['get_style_title_ru'] else ''
         return f'''
 Название: *{furniture['title_ru']}*
 
@@ -63,12 +64,11 @@ def text_for_furniture(language, furniture):
 __{furniture['description_ru']}__                                                                            
 
 Категория: *{furniture['get_category_title_ru']}*
-
-Стиль: *{furniture['get_style_title_ru']}*
-
+{styles_info}
 Цена: *{furniture['price']}* 
         '''
     else:
+        styles_info = f"\nStil: *{furniture['get_style_title_uz']}*\n" if furniture['get_style_title_uz'] else ''
         return f'''
 Nomi: *{furniture['title_uz']}*
 
@@ -76,14 +76,13 @@ Tavsif:
 {furniture['description_uz']}
 
 Kategoriya: *{furniture['get_category_title_uz']}*
-
-Stil: *{furniture['get_style_title_uz']}*
-
+{styles_info}
 Narx: *{furniture['price']}* 
         '''
 
 def text_order(language, order):
     if language == 'ru':
+        styles_info = f"\nСтиль: *{order['get_style_furniture_ru']}\n*" if order['get_style_furniture_ru'] else ''
         return f'''
 Название мебели: *{order['get_title_furniture_ru']}*
 
@@ -91,26 +90,22 @@ def text_order(language, order):
 {order['get_description_furniture_ru']}
 
 Категория: *{order['get_category_furniture_ru']}*
-
-Стиль: *{order['get_style_furniture_ru']}*
-
+{styles_info}
 Описание заказа: {order['description']}
-
 Статус: *{order['status']}*
-
 Забронированая дата: *{order['datetime_order']}*
         '''
     else: 
+        styles_info = f"\nStil: *{order['get_style_furniture_uz']}*\n" if order['get_style_furniture_uz'] else ''
+        
         return f'''
-Nomi: *{order['get_title_furniture_ru']}*
+Nomi: *{order['get_title_furniture_uz']}*
 
 Mebel tavsifi: 
-{order['get_description_furniture_ru']}
+{order['get_description_furniture_uz']}
 
-Kategoriya: *{order['get_category_furniture_ru']}*
-
-Usul: *{order['get_style_furniture_ru']}*
-
+Kategoriya: *{order['get_category_furniture_uz']}*
+{styles_info}
 Buyurtma tavsifi: {order['description']}
 
 Holat: *{order['status']}*

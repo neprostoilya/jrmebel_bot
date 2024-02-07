@@ -7,7 +7,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Categories
-        fields = ('pk', 'title_ru', 'title_uz', 'subcategory')
+        fields = ('pk', 'title_ru', 'title_uz', 'subcategory', 'without_style')
 
 class StylesSerializer(serializers.ModelSerializer):
     """
