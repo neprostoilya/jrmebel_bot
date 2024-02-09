@@ -15,17 +15,21 @@ def phone_button_keyboard(btn) -> dict:
         ], resize_keyboard=True
     )
 
-def main_menu_keyboard(catalog, orders, settings) -> dict:
+def main_menu_keyboard(catalog, orders, settings, info) -> dict:
     """
     Main menu with buttons
     """
-    return ReplyKeyboardMarkup(
-        [
-            [KeyboardButton(text=f"🧾 {catalog}"),
-             KeyboardButton(text=f"🛍️ {orders}"), 
-             KeyboardButton(text=f"⚙️ {settings}")]
-        ], resize_keyboard=True
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    
+    markup.row(KeyboardButton(text=f"🧾 {catalog}"))
+    markup.add(
+        *[
+            KeyboardButton(text=f"📖 {orders}"),
+            KeyboardButton(text=f"ℹ️  {info}"),
+        ]
     )
+    markup.row(KeyboardButton(text=f"⚙️ {settings}"))
+    return markup
 
 def back_to_main_menu_keyboard(back_btn) -> dict:
     """
@@ -34,6 +38,7 @@ def back_to_main_menu_keyboard(back_btn) -> dict:
     return ReplyKeyboardMarkup([
         [KeyboardButton(text=f'↩ {back_btn}')]
     ], resize_keyboard=True)
+
 
 def catalog_categories_keyboard(language) -> dict:
     """
@@ -220,21 +225,31 @@ def choose_time_keyboard(year: int, month: int, day: int, back: str):
     day_name = calendar.day_name[date.weekday()]
 
     buttons = []
-
+    
     times_list = get_times(str(day_name))
-
 
     for _ in times_list:
         time = _['time']
-
-        btn = (
-            InlineKeyboardButton(
-                text=time, 
-                callback_data=f'select_time_{time}'
+        
+        datetime_order = f'{year}-{month}-{day}, {time}'
+        
+        if get_order_by_datetime(datetime_order) == False:
+            btn = (
+                InlineKeyboardButton(
+                    text=time, 
+                    callback_data=f'select_time_{time}'
+                )
             )
-        )
-        buttons.append(btn)
-
+            buttons.append(btn)
+        else:
+            btn = (
+                InlineKeyboardButton(
+                    text='Бронь', 
+                    callback_data=f'ignore'
+                )
+            )
+            buttons.append(btn)
+             
     markup.add(*buttons)
 
     markup.row(

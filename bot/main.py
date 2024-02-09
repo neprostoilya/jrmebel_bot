@@ -62,12 +62,13 @@ def get_translate_text(data, value):
         pass
 
 @dp.message_handler(commands=['start', 'help', 'about'], state='*') 
-async def commands(message: Message):
+async def commands(message: Message, state: FSMContext):
     """
     Reaction on commands
     """
     text = message.text
-
+    await state.finish()
+    
     match text:
         case '/start':
             await choose_language(message)
@@ -105,7 +106,7 @@ async def set_language(message: Message, state: FSMContext):
         message_id=message_id-1
     )
 
-    await bot.delete_message(
+    await bot.delete_message(       
         chat_id=chat_id,
         message_id=message_id
     )
@@ -177,11 +178,12 @@ async def main_menu(message: Message, state: FSMContext):
     orders = get_translate_text(data, 'orders_btn_keyboard')
     settings = get_translate_text(data, 'settings_btn_keyboard')
     main_menu = get_translate_text(data, 'main_menu')
+    info = get_translate_text(data, 'info')
 
     await bot.send_message(
         chat_id=chat_id,
         text=main_menu,
-        reply_markup=main_menu_keyboard(catalog, orders, settings)
+        reply_markup=main_menu_keyboard(catalog, orders, settings, info)
     )
 
 async def main_menu_call(call: CallbackQuery, state: FSMContext):
@@ -195,11 +197,12 @@ async def main_menu_call(call: CallbackQuery, state: FSMContext):
     orders = get_translate_text(data, 'orders_btn_keyboard')
     settings = get_translate_text(data, 'settings_btn_keyboard')
     main_menu = get_translate_text(data, 'main_menu')
+    info = get_translate_text(data, 'info')
 
     await bot.send_message(
         chat_id=chat_id,
         text=main_menu,
-        reply_markup=main_menu_keyboard(catalog, orders, settings)
+        reply_markup=main_menu_keyboard(catalog, orders, settings, info)
     )
 
 @dp.message_handler(lambda message: 'Каталог'  in message.text or 'Katalog' in message.text, state='*')
@@ -211,7 +214,7 @@ async def catalog_categories_list(message: Message, state: FSMContext):
     data = await state.get_data()
 
     await bot.send_message(
-        chat_id, 
+        chat_id,
         text='.',
         reply_markup=back_to_main_menu_keyboard(get_translate_text(data, 'back_to_main_menu_btn_keyboard'))
     )
@@ -524,12 +527,12 @@ async def back_to_subcategories(call: CallbackQuery, state: FSMContext):
         reply_markup=catalog_subcategories_keyboard(data.get('language'), get_translate_text(data, 'back'), category_id)
     )
 
-@dp.message_handler(lambda message: 'Главное меню'  in message.text or 'Asosiy menyu' in message.text)
-async def back_to_main(message: Message, state: FSMContext):
+@dp.callback_query_handler(lambda call: 'back_to_main_menu' in call.data)
+async def back_to_main(call: CallbackQuery, state: FSMContext):
     """
     Reaction on back button 
     """
-    chat_id, _, _, _, message_id = default_message(message)
+    chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data()
 
     count = data.get('count')
@@ -551,7 +554,7 @@ async def back_to_main(message: Message, state: FSMContext):
             message_id=message_id - 1
         )
         
-    await main_menu(message, state)
+    await main_menu_call(call, state)
 
 @dp.callback_query_handler(lambda call: 'call_to_manager_' in call.data)
 async def call_to_manager(call: CallbackQuery, state: FSMContext):
@@ -621,6 +624,35 @@ async def get_description_for_call(message: Message, state: FSMContext):
         language=language
     )
     
+    await main_menu(message, state)
+
+@dp.message_handler(lambda message: 'Главное меню'  in message.text or 'Asosiy menyu' in message.text)
+async def back_to_main(message: Message, state: FSMContext):
+    """
+    Reaction on back button 
+    """
+    chat_id, _, _, _, message_id = default_message(message)
+    data = await state.get_data()
+
+    count = data.get('count')
+    
+    if count:
+        for _ in range(count+1):
+            await bot.delete_message(
+                chat_id=chat_id,
+                message_id=message_id-_
+            )
+    else:
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id
+        )
+
+        await bot.delete_message(
+            chat_id=chat_id,
+            message_id=message_id - 1
+        )
+        
     await main_menu(message, state)
 
 @dp.callback_query_handler(lambda call: 'create_order_' in call.data)
@@ -875,6 +907,7 @@ async def get_time_for_order(call: CallbackQuery, state: FSMContext):
     
     await main_menu_call(call, state)
 
+        
 def send_message_to_manager(chat_id, username, furniture_pk, description, status, datetime_order):
     """
     Send message to manager group
@@ -1033,6 +1066,24 @@ async def confirmed_rejected_order(call: CallbackQuery, state: FSMContext):
         chat_id=MANAGER,
         text='Отправьте причину отказа пользователю.'
     )
-   
+
+@dp.message_handler(lambda message: 'Подробнее'  in message.text or 'Batafsil' in message.text, state='*')
+async def about_the_bot(message: Message, state: FSMContext):
+    """
+    Reaction on button
+    """
+    chat_id, _, _, _, _ = default_message(message)
+    data = await state.get_data() 
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text=get_translate_text(data, 'info_text'), 
+    )
+    
+    latitude = 40.836576
+    longitude = 69.620056
+    
+    await bot.send_location(chat_id, latitude, longitude)
+    
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

@@ -125,10 +125,12 @@ def get_order(user, furniture_pk, description, status, datetime):
     """
     Get Order
     """
-    data = get(f'order/get_order/{user}/{furniture_pk}/{description}/{status}/{datetime}')
-
-    return data
-
+    try:
+        data = get(f'order/get_order/{user}/{furniture_pk}/{description}/{status}/{datetime}')
+        return data
+    except requests.exceptions.HTTPError:
+        return None
+    
 def update_order(pk, user, status):
     """
     Put Order
@@ -228,7 +230,15 @@ def get_order_by_datetime(datetime):
     """
     try:
         get(f'order/get_order_by_datetime/{datetime}/')
+        return True
     except:
         return False
-    return True
+    
 
+def check_datetime(datetime):
+    """ 
+    Check time
+    """
+    data = {'datetime': datetime}
+
+    return post(f'order/check_datetime/', datetime)

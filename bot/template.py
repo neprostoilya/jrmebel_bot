@@ -1,5 +1,15 @@
 translations = {
         "uz": {
+            "info": "Kontaktlar",
+            "info_text": '''
+Ish Tartibi:
+DUSHANBA-JUMA: 9:00-18:00
+Shanba: 9:00-14:00
+Quyosh: dam olish kuni
+
+Menejer: +998 (94) 080-33-99
+Bizning manzilimiz: Olmaliq shahri, st. Bobushkina 39
+            ''',
             "succes_auth": "Muafiyatli autentifikatsiya!",
             "registration_text": "Ro'yxatdan o'tish uchun iltimos aloqani qoldiring.",
             "finished_register": "Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!",
@@ -17,6 +27,7 @@ translations = {
             "last_orders": "Sizning oxirgi buyurtmalaringiz.",
             "create_order": "O'lchov buyurtirish",
             "back": "Orqaga",
+            'reserverd_date': 'Kechirasiz, lekin bu vaqt ajratilgan, iltimos boshqa sanani tanlang.',
             "create_order_btn_text": "O'lchovga buyurtma bering",
             "change_language": "Tilni tanlang:",
             "select_month": "Oy tanlang:",
@@ -27,6 +38,16 @@ translations = {
             "call_btn_text": "Qo'ng'iroq qiling"
         },
         "ru": {
+            "info": "Контакты",
+            "info_text": '''
+Режим работы:  
+ПН - ПТ: 9:00 - 18:00  
+СБ: 9:00 - 14:00  
+ВС: Выходной  
+
+Менеджер: +998 (94) 080-33-99  
+Наш адрес: г. Алмалык ул. Бабушкина 39
+            ''',
             "succes_auth": "Авторизация прошла успешно!",
             "registration_text": "Для регистрации пожалуйста оставьте контакт.",
             "finished_register": "Регистрация прошла успешно!",
@@ -42,6 +63,7 @@ translations = {
             "description_for_order": "Для заказа отправьте описание заказа.",
             "success_create_order": "Ваше время замеров зарезервировано.  Ожидайте звонка менеджера, для уточнения деталей замера.",
             "last_orders": "Ваши последние заказы.",
+            'reserverd_date': 'Извините но это время зарезервивано, Пожалуйста выберите другую дату.',
             "create_order_btn_text": "Заказать замер",
             "back": "Назад",
             "change_language": "Выберите язык:",
