@@ -215,7 +215,7 @@ async def catalog_categories_list(message: Message, state: FSMContext):
 
     await bot.send_message(
         chat_id,
-        text='Вы выбрали *Каталог*',
+        text=get_translate_text(data, 'text_katalog'),
         reply_markup=back_to_main_menu_keyboard(get_translate_text(data, 'back_to_main_menu_btn_keyboard')),
         parse_mode='Markdown'
     )
