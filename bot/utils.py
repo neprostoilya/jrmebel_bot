@@ -99,7 +99,7 @@ def get_text_for_call(title, description_furniture, category, style, price, user
     """
     Get text for call
     """
-    styles_info = f"\nStil: *{style}*\n" if style else ''
+    styles_info = f"\nСтиль: *{style}*\n" if style else ''
     return f'''
 Пользователь заказал звонок.
     
@@ -123,7 +123,7 @@ def get_text_for_manager(title, description_furniture, category, style, price, u
     """
     Get text for furniture
     """
-    styles_info = f"\nStil: *{style}*\n" if style else ''
+    styles_info = f"\Стиль: *{style}*\n" if style else ''
     return f'''
 Название мебели: *{title}*
 

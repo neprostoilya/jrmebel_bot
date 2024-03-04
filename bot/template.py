@@ -33,9 +33,9 @@ Bizning manzilimiz: Olmaliq shahri, st. Bobushkina 39
             "select_month": "Oy tanlang:",
             "select_day": "Kunni tanlang: E'tibor bering, biz yakshanba kuni ishlamaymiz.",
             "select_time": "Vaqtni tanlang:",
-            "description_for_call": "Menejerga qo'ng'iroq qilish uchun qo'ng'iroq tavsifini o'zbek lotin tiliga yuboring",
+            "description_for_call": "Sizni nima qiziqtirayotganini tasvirlab bering.",
             "success_send_message_for_call": "Ariza muvaffaqiyatli yuborildi, qo'ng'iroqni kuting.",
-            "call_btn_text": "Qo'ng'iroq qiling"
+            "call_btn_text": "Menejerdan qo'ng'iroq"
         },
         "ru": {
             "info": "Контакты",
@@ -70,9 +70,9 @@ Bizning manzilimiz: Olmaliq shahri, st. Bobushkina 39
             "select_month": "Выберите месяц:",
             "select_day": "Выберите день: Примечание в воскресение мы не работаем.",
             "select_time": "Выберите время:",
-            "description_for_call": "Для звонка менеджеру отправьте описание звонка",
+            "description_for_call": "Опишите, что Вас интересует.",
             "success_send_message_for_call": "Заявка успешно отправлена, ожидайте звонка.",
-            "call_btn_text": "Позвонить"
+            "call_btn_text": "Звонок от менеджера"
         }
     }
 

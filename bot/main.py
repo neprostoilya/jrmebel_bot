@@ -215,8 +215,9 @@ async def catalog_categories_list(message: Message, state: FSMContext):
 
     await bot.send_message(
         chat_id,
-        text='.',
-        reply_markup=back_to_main_menu_keyboard(get_translate_text(data, 'back_to_main_menu_btn_keyboard'))
+        text='Вы выбрали *Каталог*',
+        reply_markup=back_to_main_menu_keyboard(get_translate_text(data, 'back_to_main_menu_btn_keyboard')),
+        parse_mode='Markdown'
     )
 
     await bot.send_message(
@@ -256,7 +257,7 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
 
     subcategory_id = int(call.data.split('_')[-2])
     without_style = call.data.split('_')[-1]
-    
+
     await state.update_data(
         subcategory_id=subcategory_id
     ) 
@@ -626,7 +627,7 @@ async def get_description_for_call(message: Message, state: FSMContext):
     
     await main_menu(message, state)
 
-@dp.message_handler(lambda message: 'Главное меню'  in message.text or 'Asosiy menyu' in message.text)
+@dp.message_handler(lambda message: 'Главное меню'  in message.text or 'Bosh menyu' in message.text)
 async def back_to_main(message: Message, state: FSMContext):
     """
     Reaction on back button 
@@ -953,6 +954,7 @@ async def send_message_order_accepted_to_user(message: Message, state: FSMContex
     chat_id, _, _, _, message_id = default_message(message)
     data = await state.get_data()
 
+    print('#1')
     order_pk = data.get('order_pk')
     status = data.get('status')
     note = data.get('note')
@@ -1067,7 +1069,7 @@ async def confirmed_rejected_order(call: CallbackQuery, state: FSMContext):
         text='Отправьте причину отказа пользователю.'
     )
 
-@dp.message_handler(lambda message: 'Подробнее'  in message.text or 'Batafsil' in message.text, state='*')
+@dp.message_handler(lambda message: 'Контакты'  in message.text or 'Kontaktlar' in message.text, state='*')
 async def about_the_bot(message: Message, state: FSMContext):
     """
     Reaction on button
