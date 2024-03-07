@@ -99,48 +99,48 @@ def get_text_for_call(title, description_furniture, category, style, price, user
     """
     Get text for call
     """
-    styles_info = f"\nСтиль: *{style}*\n" if style else ''
+    styles_info = f"\nСтиль: <b>{style}</b>\n" if style else ''
     return f'''
 Пользователь заказал звонок.
     
 Пользователь: @{username[0]}
 
-Номер: *{phone}*
+Номер: <b>{phone}</b>
 
 Описание: {description}
 
-Название мебели: *{title}*
+Название мебели: <b>{title}</b>
 
 Описание мебели: 
 {description_furniture}
 
-Категория мебели: *{category}*
+Категория мебели: <b>{category}</b>
 {styles_info}
-Цена: *{price}*
+Цена: <b>{price}</b>
     '''
 
 def get_text_for_manager(title, description_furniture, category, style, price, username, description, phone, status, datetime_order):
     """
     Get text for furniture
     """
-    styles_info = f"\Стиль: *{style}*\n" if style else ''
+    styles_info = f"\Стиль: <b>{style}</b>\n" if style else ''
     return f'''
-Название мебели: *{title}*
+Название мебели: <b>{title}</b>
 
 Описание мебели: 
 {description_furniture}
 
-Категория мебели: *{category}*
+Категория мебели: <b>{category}</b>
 {styles_info}
-Цена: *{price} сумм*
+Цена: <b>{price} сумм</b>
 
 Пользователь: @{username[0]}
 
 Описание заказа: {description}
 
-Номер: *{phone}*
+Номер: <b>{phone}</b>
 
-Статус заказа: *{status}*
+Статус заказа: <b>{status}</b>
 
-Забронированая дата: *{datetime_order}*
+Забронированая дата: <b>{datetime_order}</b>
     '''

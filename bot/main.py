@@ -616,7 +616,7 @@ async def get_description_for_call(message: Message, state: FSMContext):
     await bot.send_message(
         chat_id=MANAGER,
         text=get_text_to_manager_for_call(phone, username, furniture_pk, description),
-        parse_mode='Markdown'
+        parse_mode='HTML'
     )
     
     await state.finish()
@@ -887,12 +887,12 @@ async def get_time_for_order(call: CallbackQuery, state: FSMContext):
         status='Ожидание принятия',
         datetime=datetime
     )
-
+    
     await bot.send_message(
         chat_id=MANAGER,
         text=text,
         reply_markup=confirmation_order_keyboard(order[0]['pk']),
-        parse_mode='Markdown'
+        parse_mode='HTML'
     )
 
     await bot.send_message(
@@ -913,7 +913,10 @@ def send_message_to_manager(chat_id, username, furniture_pk, description, status
     """
     Send message to manager group
     """
-    phone = get_phone(chat_id)
+    if get_phone(chat_id):
+        phone = get_phone(chat_id)
+    else:
+        phone = 'Без Номера'
 
     text = get_text_to_manager(
         phone=phone,
@@ -954,7 +957,6 @@ async def send_message_order_accepted_to_user(message: Message, state: FSMContex
     chat_id, _, _, _, message_id = default_message(message)
     data = await state.get_data()
 
-    print('#1')
     order_pk = data.get('order_pk')
     status = data.get('status')
     note = data.get('note')
