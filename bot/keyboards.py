@@ -15,7 +15,7 @@ def phone_button_keyboard(btn) -> dict:
         ], resize_keyboard=True
     )
 
-def main_menu_keyboard(catalog, orders, settings, info) -> dict:
+def main_menu_keyboard(catalog, orders, settings, info, to_start) -> dict:
     """
     Main menu with buttons
     """
@@ -28,16 +28,35 @@ def main_menu_keyboard(catalog, orders, settings, info) -> dict:
             KeyboardButton(text=f"ℹ️  {info}"),
         ]
     )
+    markup.row(KeyboardButton(text=to_start))
     markup.row(KeyboardButton(text=f"⚙️ {settings}"))
     return markup
 
-def back_to_main_menu_keyboard(back_btn) -> dict:
+def back_to_main_menu_keyboard(back_btn, to_start) -> dict:
     """
     Back to main menu
     """
-    return ReplyKeyboardMarkup([
-        [KeyboardButton(text=f'↩ {back_btn}')]
-    ], resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(
+        *[
+            KeyboardButton(text=f'↩ {back_btn}'),
+            KeyboardButton(text=f'{to_start}')
+        ]
+    )
+    return markup
+
+
+def back_to_start_keyboard() -> dict:
+    """
+    Back to main menu
+    """
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(
+        *[
+            KeyboardButton(text=f'В начало')
+        ]
+    )
+    return markup
 
 
 def catalog_categories_keyboard(language) -> dict:
