@@ -7,7 +7,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Categories
-        fields = ('pk', 'title_ru', 'title_uz', 'subcategory', 'without_style')
+        fields = ('pk', 'title',  'subcategory', 'without_style')
 
 class StylesSerializer(serializers.ModelSerializer):
     """
@@ -15,7 +15,7 @@ class StylesSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Styles
-        fields = ('pk', 'title_ru', 'title_uz', 'category')
+        fields = ('pk', 'title',  'category')
 
 class FurnituresSerializer(serializers.ModelSerializer):
     """
@@ -24,9 +24,9 @@ class FurnituresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Furnitures
         fields = (
-            'pk', 'title_ru', 'title_uz', 'category', 'image', 'description_ru', 
-            'description_uz', 'style', 'get_category_title_uz', 'get_category_title_ru',
-            'get_style_title_ru', 'get_style_title_uz', 'price'
+            'pk', 'title',  'category', 'image', 'description', 
+             'style', 'get_category_title',
+            'get_style_title', 'price'
         )
 
 class GallerySerializer(serializers.ModelSerializer):

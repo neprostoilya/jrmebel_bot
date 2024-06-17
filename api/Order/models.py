@@ -40,29 +40,18 @@ class Orders(models.Model):
     descriptiontrim.allow_tags = True
     descriptiontrim.short_description = 'Описание'
 
-    def get_title_furniture_ru(self):
-        return self.furniture.title_ru
+    def get_title_furniture(self):
+        return self.furniture.title
     
-    def get_title_furniture_uz(self):
-        return self.furniture.title_uz
-    
-    def get_description_furniture_ru(self):
-        return self.furniture.description_ru
+    def get_description_furniture(self):
+        return self.furniture.description
 
-    def get_description_furniture_uz(self):
-        return self.furniture.description_uz
 
-    def get_category_furniture_ru(self):
-        return self.furniture.category.title_ru
+    def get_category_furniture(self):
+        return self.furniture.category.title
 
-    def get_category_furniture_uz(self):
-        return self.furniture.category.title_uz
-
-    def get_style_furniture_ru(self):
-        return self.furniture.category.title_ru
-
-    def get_style_furniture_uz(self):
-        return self.furniture.category.title_uz
+    def get_style_furniture(self):
+        return self.furniture.category.title
 
     def __str__(self):
         return self.user.username

@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery, MediaGroup, InputFile, ReplyKe
 
 from utils import  get_furnitures, get_text_order, get_text_to_manager, get_text_to_manager_for_call
 from config import MANAGER, TOKEN
-from template import get_days_list, get_months_list, translations
+from template import get_days_list, get_months_list
 from db import *
 from keyboards import *
 
@@ -51,16 +51,6 @@ def default_call(call: CallbackQuery):
 
     return chat_id, full_name, first_name, username, message_id
 
-def get_translate_text(data, value):
-    """
-    Get translate text 
-    """
-    try:
-        language = data.get('language')
-        return translations[language][value]
-    except KeyError:
-        pass
-
 @dp.message_handler(commands=['start', 'help', 'about'], state='*') 
 async def commands(message: Message, state: FSMContext):
     """
@@ -71,7 +61,7 @@ async def commands(message: Message, state: FSMContext):
     
     match text:
         case '/start':
-            await choose_language(message)
+            await register_and_login(message, state)
         case '/about':
             await message.answer(
                 'Этот Бот Создан для заказа мебели...',
@@ -83,49 +73,6 @@ async def commands(message: Message, state: FSMContext):
                 parse_mode='Markdown'
             )
 
-async def choose_language(message: Message):
-    """
-    Choose language bot
-    """     
-    await message.answer(
-        text='Выберите ваш язык.',
-        parse_mode='Markdown',
-        reply_markup=choose_language_keyboard()
-    )   
-
-
-@dp.message_handler(lambda message: 'В начало' in message.text or 'Boshlanishi' in message.text, state='*')
-async def to_start(message: Message, state: FSMContext):
-    """
-    To start
-    """
-    await state.finish()
-    
-    await choose_language(message)
-
-@dp.message_handler(lambda message: 'Русский'  in message.text or "O'zbekcha" in message.text, state='*')
-async def set_language(message: Message, state: FSMContext):
-    """
-    Set language
-    """
-    chat_id, _, _, _, message_id = default_message(message)
-    languages = {'🇷🇺 Русский': 'ru', "🇺🇿 O'zbekcha": 'uz'}
-
-    await bot.delete_message(
-        chat_id=chat_id,
-        message_id=message_id-1
-    )
-
-    await bot.delete_message(       
-        chat_id=chat_id,
-        message_id=message_id
-    )
-
-    await state.update_data(
-        language=languages[message.text]
-    )
-
-    await register_and_login(message, state)
 
 async def register_and_login(message: CallbackQuery, state: FSMContext):
     """
@@ -140,14 +87,14 @@ async def register_and_login(message: CallbackQuery, state: FSMContext):
         login_user(chat_id)
 
         await message.answer(
-            text=get_translate_text(data, 'succes_auth'),
+            text='Авторизация прошла успешно!',
         )
 
         await main_menu(message, state)
     else:
         await message.answer(
-            text=get_translate_text(data, 'registration_text'),
-            reply_markup=phone_button_keyboard(get_translate_text(data, 'phone_btn_keyboard'))
+            text='Для регистрации пожалуйста оставьте контакт.',
+            reply_markup=phone_button_keyboard('Отправить контакт')
         )
 
 @dp.message_handler(content_types=['contact'], state='*') 
@@ -172,7 +119,7 @@ async def finish_register(message: Message, state: FSMContext):
     )
 
     await message.answer(
-        text=get_translate_text(data, 'finished_register'),
+        text='Регистрация прошла успешно!',
     )
 
     await main_menu(message, state)
@@ -183,18 +130,11 @@ async def main_menu(message: Message, state: FSMContext):
     """
     chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data()
-
-    catalog = get_translate_text(data, 'catalog_btn_keyboard')
-    orders = get_translate_text(data, 'orders_btn_keyboard')
-    settings = get_translate_text(data, 'settings_btn_keyboard')
-    main_menu = get_translate_text(data, 'main_menu')
-    info = get_translate_text(data, 'info')
-    to_start_btn = get_translate_text(data, 'to_start')
     
     await bot.send_message(
         chat_id=chat_id,
-        text=main_menu,
-        reply_markup=main_menu_keyboard(catalog, orders, settings, info, to_start_btn)
+        text='Выберите направление:',
+        reply_markup=main_menu_keyboard('Каталог', 'Заказы',  'Контакты')
     )
 
 async def main_menu_call(call: CallbackQuery, state: FSMContext):
@@ -204,20 +144,13 @@ async def main_menu_call(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, _, _ = default_call(call)
     data = await state.get_data()
 
-    catalog = get_translate_text(data, 'catalog_btn_keyboard')
-    orders = get_translate_text(data, 'orders_btn_keyboard')
-    settings = get_translate_text(data, 'settings_btn_keyboard')
-    main_menu = get_translate_text(data, 'main_menu')
-    info = get_translate_text(data, 'info')
-    to_start_btn = get_translate_text(data, 'to_start')
-    
     await bot.send_message(
         chat_id=chat_id,
         text=main_menu,
-        reply_markup=main_menu_keyboard(catalog, orders, settings, info, to_start_btn)
+        reply_markup=main_menu_keyboard('Каталог', 'Заказы',  'Контакты')
     )
 
-@dp.message_handler(lambda message: 'Каталог'  in message.text or 'Katalog' in message.text, state='*')
+@dp.message_handler(lambda message: 'Каталог' in message.text, state='*')
 async def catalog_categories_list(message: Message, state: FSMContext):
     """
     Reaction on button
@@ -225,21 +158,17 @@ async def catalog_categories_list(message: Message, state: FSMContext):
     chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data()
 
-    back_btn = get_translate_text(data, 'back_to_main_menu_btn_keyboard')
-    
-    to_start_btn = get_translate_text(data, 'to_start')
-
     await bot.send_message(
         chat_id,
-        text=get_translate_text(data, 'text_katalog'),
-        reply_markup=back_to_main_menu_keyboard(back_btn, to_start_btn),
+        text='*Каталог*',
+        reply_markup=back_to_main_menu_keyboard('Назад'),
         parse_mode='Markdown'
     )
 
     await bot.send_message(
         chat_id, 
-        text=get_translate_text(data, 'choose_category'),
-        reply_markup=catalog_categories_keyboard(data.get('language'))
+        text='Выберите категорию:',
+        reply_markup=catalog_categories_keyboard()
     )
 
 @dp.callback_query_handler(lambda call: 'categories_' in call.data)
@@ -258,9 +187,9 @@ async def catalog_subcategories_list(call: CallbackQuery, state: FSMContext):
 
     await bot.edit_message_text(
         chat_id=chat_id,
-        text=get_translate_text(data, 'choose_subcategory'),
+        text='Выберите подкатегорию:',
         message_id=message_id,
-        reply_markup=catalog_subcategories_keyboard(data.get('language'), get_translate_text(data, 'back'), category_id)
+        reply_markup=catalog_subcategories_keyboard('Назад', category_id)
     )
 
 @dp.callback_query_handler(lambda call: 'subcategory_' in call.data)
@@ -282,14 +211,11 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
         styles = get_styles(subcategory_id)
         await bot.edit_message_text(
             chat_id=chat_id,
-            text=get_translate_text(data, 'choose_style'),
+            text='Выберите стиль:',
             message_id=message_id,
-            reply_markup=catalog_styles_keyboard(styles, data.get('language'), get_translate_text(data, 'back'), subcategory_id)
+            reply_markup=catalog_styles_keyboard(styles, 'Назад', subcategory_id)
         )
     else:
-        create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
-        call_btn_text = get_translate_text(data, 'call_btn_text')
-
         await state.update_data(
             pk=0,
             style_id=None,
@@ -297,7 +223,6 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
         ) 
 
         images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
-            language=data.get('language'),
             without_style=without_style,
             style_id=None,
             category_id=subcategory_id,
@@ -329,7 +254,7 @@ async def catalog_styles_list(call: CallbackQuery, state: FSMContext):
         await bot.send_message(
             chat_id=chat_id,
             text=text,
-            reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+            reply_markup=catalog_furnitures_keyboard('Звонок от менеджера', 'Заказать замер', pk, quantity_furnitures, get_pk),
             parse_mode='Markdown'
         )
         
@@ -343,8 +268,6 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
 
     category_id = data.get('subcategory_id')
     style_id = int(call.data.split('_')[-1])
-    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
-    call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
         pk=0,
@@ -352,7 +275,6 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     ) 
 
     images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
-        language=data.get('language'),
         category_id=category_id,
         style_id=style_id,
         without_style=None,
@@ -384,7 +306,7 @@ async def catalog_furnitures(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard('Звонок от менеджера', 'Заказать замер', pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
@@ -400,8 +322,6 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     style_id = data.get('style_id')
     without_style = data.get('without_style')
     pk = data.get('pk') + 1
-    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
-    call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
         pk=pk,
@@ -410,7 +330,6 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
-        language=data.get('language'),
         category_id=category_id,
         style_id=style_id,
         without_style=without_style,
@@ -446,7 +365,7 @@ async def catalog_action_plus(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard('Звонок от менеджера', 'Заказать замер', pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
@@ -462,8 +381,6 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     style_id = data.get('style_id')
     without_style = data.get('without_style')
     pk = data.get('pk') - 1
-    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
-    call_btn_text = get_translate_text(data, 'call_btn_text')
 
     await state.update_data(
         pk=pk,
@@ -472,7 +389,6 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     ) 
 
     images_path, _, text, quantity_furnitures, get_pk = get_furnitures(
-        language=data.get('language'),
         category_id=category_id,
         style_id=style_id,
         without_style=without_style,
@@ -508,7 +424,7 @@ async def catalog_action_minus(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard('Звонок от менеджера', 'Заказать замер', pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
@@ -521,10 +437,10 @@ async def back_to_categories(call: CallbackQuery, state: FSMContext):
     data = await state.get_data() 
 
     await bot.edit_message_text(
-        text=get_translate_text(data, 'choose_category'),
+        text='Выберите категорию:',
         chat_id=chat_id, 
         message_id=message_id,
-        reply_markup=catalog_categories_keyboard(data.get('language'))
+        reply_markup=catalog_categories_keyboard()
     )
 
 @dp.callback_query_handler(lambda call: 'back_to_subcategories' in call.data)
@@ -538,10 +454,10 @@ async def back_to_subcategories(call: CallbackQuery, state: FSMContext):
     category_id = data.get('category_id')
 
     await bot.edit_message_text(
-        text=get_translate_text(data, 'choose_subcategory'),
+        text='Выберите подкатегорию:',
         chat_id=chat_id, 
         message_id=message_id,
-        reply_markup=catalog_subcategories_keyboard(data.get('language'), get_translate_text(data, 'back'), category_id)
+        reply_markup=catalog_subcategories_keyboard('Назад', category_id)
     )
 
 @dp.callback_query_handler(lambda call: 'back_to_main_menu' in call.data)
@@ -590,14 +506,11 @@ async def call_to_manager(call: CallbackQuery, state: FSMContext):
             message_id=message_id - _
         )   
 
-    back_btn = get_translate_text(data, 'back_to_main_menu_btn_keyboard')
     
-    to_start_btn = get_translate_text(data, 'to_start')
-
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'description_for_call'),
-        reply_markup=back_to_main_menu_keyboard(back_btn, to_start_btn)
+        text='Опишите, что Вас интересует.',
+        reply_markup=back_to_main_menu_keyboard('Главное меню')
     )
     
     async with state.proxy() as data:
@@ -615,10 +528,7 @@ async def get_description_for_call(message: Message, state: FSMContext):
 
     if 'Главное меню' in message.text:
         await main_menu(message, state)
-    elif 'В начало' in message.text:
-        await choose_language(message)
     else:
-        language = data.get('language')
         phone = get_phone(chat_id)  
         description = message.text
         furniture_pk = data['furniture_pk']
@@ -635,7 +545,7 @@ async def get_description_for_call(message: Message, state: FSMContext):
 
         await bot.send_message(
             chat_id=chat_id,
-            text=get_translate_text(data, 'success_send_message_for_call')
+            text='Заявка успешно отправлена, ожидайте звонка.'
         )
 
         await bot.send_message(
@@ -646,13 +556,9 @@ async def get_description_for_call(message: Message, state: FSMContext):
 
         await state.finish()
 
-        await state.update_data(
-            language=language
-        )
-
         await main_menu(message, state)
 
-@dp.message_handler(lambda message: 'Главное меню'  in message.text or 'Bosh menyu' in message.text, state='*')
+@dp.message_handler(lambda message: 'Главное меню'  in message.text, state='*')
 async def back_to_main(message: Message, state: FSMContext):
     """
     Reaction on back button 
@@ -661,24 +567,14 @@ async def back_to_main(message: Message, state: FSMContext):
     data = await state.get_data()
 
     count = data.get('count')
-    
-    if count:
-        for _ in range(count+1):
-            await bot.delete_message(
-                chat_id=chat_id,
-                message_id=message_id-_
-            )
-    else:
-        await bot.delete_message(
-            chat_id=chat_id,
-            message_id=message_id
-        )
+    await main_menu(message, state)
 
-        await bot.delete_message(
-            chat_id=chat_id,
-            message_id=message_id - 1
-        )
-        
+
+@dp.message_handler(lambda message: '↩ Назад'  in message.text, state='*')
+async def back_to_main(message: Message, state: FSMContext):
+    """
+    Reaction on back button 
+    """
     await main_menu(message, state)
 
 @dp.callback_query_handler(lambda call: 'create_order_' in call.data)
@@ -698,14 +594,10 @@ async def confirmation(call: CallbackQuery, state: FSMContext):
             message_id=message_id - _
         )
 
-    back_btn = get_translate_text(data, 'back_to_main_menu_btn_keyboard')
-    
-    to_start_btn = get_translate_text(data, 'to_start')
-    
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'description_for_order'),
-        reply_markup=back_to_main_menu_keyboard(back_btn, to_start_btn)
+        text='Для заказа отправьте описание заказа.',
+        reply_markup=back_to_main_menu_keyboard('Главное меню')
     )
     
     async with state.proxy() as data:
@@ -721,10 +613,8 @@ async def get_description_for_order(message: Message, state: FSMContext):
     chat_id, _, _, _, message_id = default_message(message)
     data = await state.get_data() 
 
-    if 'Главное меню' in message.text or 'Bosh menyu' in message.text:
+    if 'Главное меню' in message.text in message.text:
         await main_menu(message, state)
-    elif 'В начало' in message.text or 'Boshlanishi' in message.text:
-        await choose_language(message)
     else:    
         description = message.text
         
@@ -738,20 +628,16 @@ async def get_description_for_order(message: Message, state: FSMContext):
             message_id=message_id
         )
 
-        back_btn = get_translate_text(data, 'back_to_main_menu_btn_keyboard')
-        
-        to_start_btn = get_translate_text(data, 'to_start')
-
         await bot.send_message(
             chat_id=chat_id, 
             text='Выберите дату для бронирования',
-            reply_markup=back_to_main_menu_keyboard(back_btn, to_start_btn)
+            reply_markup=back_to_main_menu_keyboard('Главное меню')
         )
         
         await bot.send_message(
             chat_id=chat_id,
-            text=get_translate_text(data, 'select_month'),
-            reply_markup=choose_month_keyboard(get_translate_text(data, 'back'), get_months_list(data.get('language')))
+            text='Выберите месяц:',
+            reply_markup=choose_month_keyboard('Назад', get_months_list())
         )
 
         async with state.proxy() as data:
@@ -763,15 +649,12 @@ async def get_description_for_order(message: Message, state: FSMContext):
 async def back_to_furniture(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, _, message_id = default_call(call)
     data = await state.get_data()
-    language = data.get('language')
+
 
     category_id = data.get('subcategory_id')
     style_id = data.get('style_id')
-    create_order_btn_text = get_translate_text(data, 'create_order_btn_text')
-    call_btn_text = get_translate_text(data, 'call_btn_text')
 
     images_path, pk, text, quantity_furnitures, get_pk = get_furnitures(
-        language=language,
         category_id=category_id,
         style_id=style_id,
         pk=0
@@ -800,14 +683,13 @@ async def back_to_furniture(call: CallbackQuery, state: FSMContext):
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=catalog_furnitures_keyboard(call_btn_text, create_order_btn_text, pk, quantity_furnitures, get_pk),
+        reply_markup=catalog_furnitures_keyboard('Звонок от менеджера', 'Заказать замер', pk, quantity_furnitures, get_pk),
         parse_mode='Markdown'
     )
 
     await state.finish()
 
     await state.update_data(
-        language=language,
         count=count,
         pk=0,
         style_id=style_id
@@ -823,8 +705,8 @@ async def get_month_for_order(call: CallbackQuery, state: FSMContext):
     await bot.edit_message_text(
         chat_id=chat_id, 
         message_id=message_id,
-        text=get_translate_text(data, 'select_day'),
-        reply_markup=choose_day_keyboard(month, get_translate_text(data, 'back'), get_days_list(data.get('language')))
+        text='Выберите день: Примечание в воскресение мы не работаем.',
+        reply_markup=choose_day_keyboard(month, 'Назад', get_days_list())
     )
 
     async with state.proxy() as data:
@@ -840,8 +722,8 @@ async def select_month_back(call: CallbackQuery, state: FSMContext):
     await bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
-        text=get_translate_text(data, 'select_month'),
-        reply_markup=choose_month_keyboard(get_translate_text(data, 'back'), get_months_list(data.get('language')))
+        text='Выберите месяц:',
+        reply_markup=choose_month_keyboard('Назад', get_months_list())
     )
 
     await CreateOrder.month.set()
@@ -858,8 +740,8 @@ async def get_day_for_order(call: CallbackQuery, state: FSMContext):
     await bot.edit_message_text(
         chat_id=chat_id, 
         message_id=message_id,
-        text=get_translate_text(data, 'select_time'),
-        reply_markup=choose_time_keyboard(year, month, day, get_translate_text(data, 'back'))
+        text='Выберите время:',
+        reply_markup=choose_time_keyboard(year, month, day, 'Назад')
     )
 
     async with state.proxy() as data:
@@ -878,8 +760,8 @@ async def select_day_back(call: CallbackQuery, state: FSMContext):
     await bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
-        text=get_translate_text(data, 'select_day'),
-        reply_markup=choose_day_keyboard(month, get_translate_text(data, 'back'), get_days_list(data.get('language')))
+        text='Выберите день: Примечание в воскресение мы не работаем.',
+        reply_markup=choose_day_keyboard(month, 'Назад', get_days_list())
     )
 
     await CreateOrder.day.set()
@@ -889,7 +771,6 @@ async def get_time_for_order(call: CallbackQuery, state: FSMContext):
     chat_id, _, _, username, message_id = default_call(call)
     data = await state.get_data()
 
-    language = data.get('language')
     user = get_user(chat_id)
     time = str(call.data.split('_')[-1])
 
@@ -941,15 +822,11 @@ async def get_time_for_order(call: CallbackQuery, state: FSMContext):
 
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'success_create_order')
+        text='Ваше время замеров зарезервировано.  Ожидайте звонка менеджера, для уточнения деталей замера.'
     )
 
     await state.finish()
 
-    await state.update_data(
-        language=language
-    )
-    
     await main_menu_call(call, state)
 
         
@@ -1056,14 +933,10 @@ async def user_orders(message: Message, state: FSMContext):
     chat_id, _, _, _, _ = default_message(message)
     data = await state.get_data() 
 
-    back_btn = get_translate_text(data, 'back_to_main_menu_btn_keyboard')
-    
-    to_start_btn = get_translate_text(data, 'to_start')
-
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'last_orders'), 
-        reply_markup=back_to_main_menu_keyboard(back_btn, to_start_btn)
+        text='Ваши последние заказы.', 
+        reply_markup=back_to_main_menu_keyboard('Главное меню')
     )
 
     orders = get_orders_by_user(
@@ -1073,24 +946,10 @@ async def user_orders(message: Message, state: FSMContext):
     for order in orders[:5]:
         await bot.send_message(
             chat_id=chat_id,
-            text=get_text_order(data.get('language'), order),
+            text=get_text_order(order),
             parse_mode='Markdown'
         )
     
-@dp.message_handler(lambda message: 'Настройки'  in message.text or 'Sozlamalar' in message.text, state='*')
-async def settings(message: Message, state: FSMContext):
-    """
-    Reaction on button
-    """
-    chat_id, _, _, _, _ = default_message(message)
-    data = await state.get_data() 
-
-    await bot.send_message(
-        chat_id=chat_id,
-        text=get_translate_text(data, 'change_language'),
-        reply_markup=choose_language_keyboard()
-    )
-
 @dp.callback_query_handler(lambda call: 'confirmation_rejected_order_' in call.data)
 async def confirmed_rejected_order(call: CallbackQuery, state: FSMContext):
     """
@@ -1129,7 +988,14 @@ async def about_the_bot(message: Message, state: FSMContext):
 
     await bot.send_message(
         chat_id=chat_id,
-        text=get_translate_text(data, 'info_text'), 
+        text='''
+Режим работы:  
+ПН - ПТ: 9:00 - 18:00  
+СБ: 9:00 - 14:00  
+ВС: Выходной  
+
+Менеджер: +998 (94) 080-33-99  
+Наш адрес: г. Алмалык ул. Бабушкина 39''', 
     )
     
     latitude = 40.836576
